@@ -4,7 +4,7 @@
 
 - Während einer Praxisphase alleine am Schlagzeug üben.
 
-## Ich kann:
+## Ich kann
 
 - Ich kenne drei berühmte Schlagzeuger.
 - Ich kann die Teile eines Schlagzeuges richtig bennen und am Klang erkennen
