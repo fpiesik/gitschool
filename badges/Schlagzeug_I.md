@@ -1,21 +1,23 @@
-# Schlagzeug I Badge
+# Schlagzeug_I
 
-## Ich darf
+## Voraussetzungen
 
-- Während einer Praxisphase alleine am Schlagzeug üben.
+- Rhythmen-Hören-Badge
+- Tabellen-Notation-Badge
 
-## Ich kann
+## Perks (ich bekomme, ich darf)
+
+- Ich darf während der Freiarbeit alleine am Schlagzeug üben.
+- Der Badge verbessert meine Musiknote.
+
+## Kompetenzen (ich kann)
 
 - Ich kenne drei berühmte Schlagzeuger.
-- Ich kann die Teile eines Schlagzeuges richtig bennen und am Klang erkennen
-- Ich kann den Standard-Rock-Beat auf dem Ipad-Schlagzeug zum Metronom spielen.
+- Ich kann die Teile eines Schlagzeuges richtig bennen und am Klang erkennen.
+- Ich kann den Standard-Rock-Beat auf dem Ipad-Schlagzeug oder Keyboard zum Metronom spielen.
 - Ich kann erklären, wie man die Tabellen-Notation liest.
 
-## Ich muss
+## Pflichten (Ich muss)
 
-- Rücksichtsvoll spielen
+- Ich muss rücksichtsvoll spielen
 - das Instrument gut behandeln
-
-&nbsp;
-
-&nbsp;
