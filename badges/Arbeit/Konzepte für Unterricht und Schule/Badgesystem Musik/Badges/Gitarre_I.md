@@ -1,4 +1,4 @@
-# Bass I
+# Gitarre I
 
 ## Voraussetzungen
 
@@ -7,7 +7,7 @@
 
 ## Perks
 
-- Ich darf während der Freiarbeit alleine am Bass üben.
+- Ich darf während der Freiarbeit alleine an der Gitarre üben.
 - Der Badge verbessert meine Musiknote.
 
 ## Kompetenzen
