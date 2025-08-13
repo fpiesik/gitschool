@@ -1,16 +1,14 @@
-# Gesang I
+# Gesang
 
-## <span style="color: rgb(0, 0, 0);">Voraussetzungen</span>
+## Voraussetzungen
 
-- <span style="color: rgb(0, 0, 0);">Tönehören-I-Badge</span>
-- <span style="color: rgb(0, 0, 0);">Klängehören-I-Badge</span>
+- Tönehören-I-Badge
+- Klängehören-I-Badge
 
-## <span style="color: rgb(0, 0, 0);">Perks</span>
+## Perks
 
-- <span style="color: rgb(0, 0, 0);">Ich darf während der Freiarbeit alleine Singen üben.</span>
+- Ich darf während der Freiarbeit alleine Singen üben.
 
-## <span style="color: rgb(0, 0, 0);">Kompetenzen</span>
+## Kompetenzen
 
-- <span style="color: rgb(0, 0, 0);">Ich kann einen vorgegebenen Ton treffen.</span>
-
-&nbsp;
+- Ich kann einen vorgegebenen Ton treffen.
