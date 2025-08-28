@@ -40,7 +40,7 @@
     /* Pegelanzeige */
     #levelWrap{display:flex;align-items:center;gap:8px;margin-left:8px}
     #levelBarOuter{width:120px;height:8px;border-radius:999px;background:#0e1726;border:1px solid #213147;overflow:hidden}
-    #levelBar{height:100%;width:0%}
+    #levelBar{height:100%;width:0%;transition:width .18s ease-out}
     /* Gain-Fader */
     #gainGroup{display:flex;align-items:center;gap:8px;margin-left:8px}
     #gainFader{width:160px}
@@ -173,6 +173,7 @@
     monitor: false,          // Audioausgabe (Feedback vermeiden)
     invert: false,           // Spektrum invertieren
     inputGainDb: 0.0,        // Eingangs-Gain in dB
+    levelSmoothTau: 0.25,     // Zeitkonstante der Pegelglättung (Sekunden)
     autostart: true,         // beim Laden automatisch starten
     hideSettings: true       // Einstellungen beim Start ausblenden
   };
@@ -287,6 +288,9 @@
   let playing = false;
   let levelAnalyser = null; // for level meter
   let inputGainNode = null; // master pre-analyser gain
+  let levelBuf = null;      // reused buffer for level meter
+  let levelEMA = 0;         // exponentially smoothed RMS
+  let lastLevelTs = 0;      // last timestamp for smoothing
 
   // Rendering helpers
   let yToBin = []; // lookup mapping canvas y -> bin index
@@ -313,7 +317,7 @@
     analyser.minDecibels = parseFloat(minDbEl.value);
     analyser.maxDecibels = parseFloat(maxDbEl.value);
     dataArray = new Float32Array(analyser.frequencyBinCount);
-    levelAnalyser = audioCtx.createAnalyser(); levelAnalyser.fftSize = 256;
+    levelAnalyser = audioCtx.createAnalyser(); levelAnalyser.fftSize = 1024; levelBuf = new Uint8Array(levelAnalyser.fftSize); levelEMA = 0; lastLevelTs = 0;
     buildYToBin();
   }
 
@@ -387,10 +391,17 @@
 
     // Pegelanzeige (RMS aus TimeDomain)
     if (levelAnalyser){
-      const arr = new Uint8Array(levelAnalyser.fftSize); levelAnalyser.getByteTimeDomainData(arr);
-      let sum=0; for (let i=0;i<arr.length;i++){ const v=(arr[i]-128)/128; sum += v*v; }
-      const rms = Math.sqrt(sum/arr.length); // ~0..1
-      const pct = Math.min(100, Math.max(0, Math.round(rms*100)));
+      if (!levelBuf || levelBuf.length !== levelAnalyser.fftSize) levelBuf = new Uint8Array(levelAnalyser.fftSize);
+      levelAnalyser.getByteTimeDomainData(levelBuf);
+      let sum=0; for (let i=0;i<levelBuf.length;i++){ const v=(levelBuf[i]-128)/128; sum += v*v; }
+      const rms = Math.sqrt(sum/levelBuf.length); // ~0..1
+      // Zeitbasierte Exponentialglättung
+      const now = performance.now();
+      const dt = lastLevelTs ? (now - lastLevelTs)/1000 : 0; lastLevelTs = now;
+      const tau = DEFAULTS.levelSmoothTau; // s
+      const alpha = dt ? 1 - Math.exp(-dt / tau) : 1; // 0..1
+      levelEMA += alpha * (rms - levelEMA);
+      const pct = Math.min(100, Math.max(0, Math.round(levelEMA*100)));
       levelBar.style.width = pct+"%";
       levelBar.style.background = `linear-gradient(90deg, #2a6fb0, #7cc0ff)`;
       levelNum.textContent = pct+"%";
