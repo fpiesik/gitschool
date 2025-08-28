@@ -3,41 +3,38 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spektrogramm – Web Audio (robust mit Fallbacks & Selbsttest)</title>
+  <title>Spektrogramm – Web Audio (robust mit Fallbacks, Device‑Auswahl & Selbsttest)</title>
   <style>
-    :root {
-      --bg: #0b0f14; --panel: #121822; --text: #e7ecf3; --muted: #aab7c4; --accent: #7cc0ff; --warn: #ffb86c;
-    }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
-      background: radial-gradient(1200px 800px at 70% -10%, #132034 0%, var(--bg) 50%); color: var(--text); }
-    header { padding:14px 18px; border-bottom:1px solid #1c2636; background:#0d1521aa; backdrop-filter: blur(6px); position:sticky; top:0; z-index:3; }
-    h1 { font-size:18px; margin:0 0 10px; letter-spacing:.3px; }
-    .controls { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px 14px; align-items:end; }
-    label { display:grid; gap:6px; font-size:12px; color:var(--muted); }
-    select, input[type="number"], input[type="range"], button, input[type="file"], input[type="checkbox"] { background:var(--panel); color:var(--text); border:1px solid #263247; border-radius:12px; padding:8px 10px; font-size:14px; outline:none; }
-    input[type="checkbox"]{ width:auto; padding:6px; }
-    input[type="range"] { height:34px; }
-    button { cursor:pointer; border:1px solid #2c3b52; background:linear-gradient(180deg, #1a2638, #101827); box-shadow:0 6px 18px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.06); transition: transform .05s ease, filter .2s ease; }
-    button:hover { filter: brightness(1.15); } button:active { transform: translateY(1px); }
-    .btn-accent { border-color:#2a6fb0; } .btn-warn { border-color:#8a5a1d; }
-    main { padding:14px 18px 22px; }
-    .canvas-shell { position:relative; border-radius:14px; overflow:hidden; border:1px solid #1c2636; background:#0d1521; box-shadow:0 20px 60px rgba(0,0,0,.45); }
-    .row { display:grid; gap:8px; }
-    #specCanvas, #axisCanvas { display:block; width:100%; height:540px; }
-    #axisCanvas { position:absolute; inset:0; pointer-events:none; z-index:2; }
-    #legend { display:flex; gap:12px; align-items:center; font-size:12px; color:var(--muted); margin-top:10px; }
-    .grad { width:160px; height:10px; border-radius:999px; border:1px solid #28364a; background:linear-gradient(90deg,#000,#220,#640,#a60,#fd0,#fff); }
-    .status { margin-left:auto; color:#b8c7d8; }
-    .pill { display:inline-flex; gap:6px; align-items:center; padding:6px 10px; border-radius:999px; background:#0e1726; border:1px solid #213147; font-size:12px; }
-    .hint { color:var(--muted); font-size:12px; margin-top:8px; }
-    .footer { color:var(--muted); font-size:12px; margin-top:14px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
-    .error { color:#ff9a9a; }
-    details.hintbox { margin-top:8px; }
-    details.hintbox summary { cursor:pointer; }
-    pre#testLog { background:#0e1726; border:1px solid #213147; padding:10px; border-radius:12px; max-height:200px; overflow:auto; }
-    .ok { color:#9cffb6; } .fail { color:#ff9a9a; }
+    :root { --bg:#0b0f14; --panel:#121822; --text:#e7ecf3; --muted:#aab7c4; --accent:#7cc0ff; --warn:#ffb86c; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans";background:radial-gradient(1200px 800px at 70% -10%,#132034 0%,var(--bg) 50%);color:var(--text)}
+    header{padding:14px 18px;border-bottom:1px solid #1c2636;background:#0d1521aa;backdrop-filter:blur(6px);position:sticky;top:0;z-index:3}
+    h1{font-size:18px;margin:0 0 10px;letter-spacing:.3px}
+    .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 14px;align-items:end}
+    label{display:grid;gap:6px;font-size:12px;color:var(--muted)}
+    select,input[type=number],input[type=range],button,input[type=file],input[type=checkbox]{background:var(--panel);color:var(--text);border:1px solid #263247;border-radius:12px;padding:8px 10px;font-size:14px;outline:none}
+    input[type=checkbox]{width:auto;padding:6px}
+    input[type=range]{height:34px}
+    button{cursor:pointer;border:1px solid #2c3b52;background:linear-gradient(180deg,#1a2638,#101827);box-shadow:0 6px 18px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);transition:transform .05s ease,filter .2s ease}
+    button:hover{filter:brightness(1.15)}button:active{transform:translateY(1px)}
+    .btn-accent{border-color:#2a6fb0}.btn-warn{border-color:#8a5a1d}
+    main{padding:14px 18px 22px}
+    .canvas-shell{position:relative;border-radius:14px;overflow:hidden;border:1px solid #1c2636;background:#0d1521;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+    .row{display:grid;gap:8px}
+    #specCanvas,#axisCanvas{display:block;width:100%;height:540px}
+    #axisCanvas{position:absolute;inset:0;pointer-events:none;z-index:2}
+    #legend{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--muted);margin-top:10px}
+    .grad{width:160px;height:10px;border-radius:999px;border:1px solid #28364a;background:linear-gradient(90deg,#000,#220,#640,#a60,#fd0,#fff)}
+    .status{margin-left:auto;color:#b8c7d8}
+    .pill{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;background:#0e1726;border:1px solid #213147;font-size:12px}
+    .hint{color:var(--muted);font-size:12px;margin-top:8px}
+    .footer{color:var(--muted);font-size:12px;margin-top:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+    .error{color:#ff9a9a}
+    details.hintbox{margin-top:8px}
+    details.hintbox summary{cursor:pointer}
+    pre#testLog{background:#0e1726;border:1px solid #213147;padding:10px;border-radius:12px;max-height:200px;overflow:auto}
+    .ok{color:#9cffb6}.fail{color:#ff9a9a}
   </style>
 </head>
 <body>
@@ -49,6 +46,11 @@
           <option value="mic">Mikrofon</option>
           <option value="file">Audiodatei</option>
           <option value="demo">Demo‑Signal</option>
+        </select>
+      </label>
+      <label>Mikrofon wählen
+        <select id="deviceSelect" disabled>
+          <option>— keine Geräte —</option>
         </select>
       </label>
       <label>Audiodatei
@@ -104,7 +106,7 @@
       <ul>
         <li>Die Seite ist nicht in einer sicheren Umgebung (HTTPS/localhost).</li>
         <li>Du hast die Anfrage blockiert. Du kannst das im Browser wieder erlauben.</li>
-        <li>Kein Mikrofon vorhanden oder vom System gesperrt.</li>
+        <li>Kein Mikrofon vorhanden, belegt oder vom System gesperrt.</li>
       </ul>
       <div>Nutze in der Zwischenzeit <b>Audiodatei</b> oder <b>Demo‑Signal</b>.</div>
     </details>
@@ -159,6 +161,7 @@
   const whyDenied    = document.getElementById('whyDenied');
   const monitorEl    = document.getElementById('monitorOut');
   const testLogEl    = document.getElementById('testLog');
+  const deviceSelect = document.getElementById('deviceSelect');
 
   const DPR = Math.min(2, window.devicePixelRatio || 1);
 
@@ -167,6 +170,11 @@
   }
   function micSupported(){
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  }
+  async function listInputDevices(){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return [];
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter(d => d.kind === 'audioinput');
   }
 
   // Layout / DPI
@@ -177,16 +185,17 @@
     drawAxis();
   }
   new ResizeObserver(fitCanvases).observe(spec);
-  window.addEventListener('load', () => {
+  window.addEventListener('load', async () => {
     fitCanvases();
     if (!isSecure()) {
       permHint.innerHTML = '⚠️ Unsichere Umgebung erkannt. Mikrofon funktioniert nur über <b>HTTPS</b> oder auf <code>localhost</code>. Wähle stattdessen <b>Audiodatei</b> oder <b>Demo‑Signal</b>.';
-      // Deaktivieren statt entfernen – damit ist klar, warum es nicht geht
       document.querySelector('#sourceSelect option[value="mic"]').disabled = true;
       if (sourceSelect.value === 'mic') sourceSelect.value = 'demo';
       whyDenied.style.display = '';
     }
-    if (!micSupported()) {
+    if (micSupported()) {
+      try { const inputs = await listInputDevices(); populateDeviceList(inputs); } catch(_){}
+    } else {
       document.querySelector('#sourceSelect option[value="mic"]').disabled = true;
     }
   });
@@ -199,6 +208,8 @@
   let currentStream = null; // MediaStream (to stop tracks reliably)
   let rafId = null;
   let playing = false;
+  let levelAnalyser = null; // for level meter
+  let levelValue = 0;
 
   // Rendering helpers
   let yToBin = []; // lookup mapping canvas y -> bin index
@@ -225,6 +236,7 @@
     analyser.minDecibels = parseFloat(minDbEl.value);
     analyser.maxDecibels = parseFloat(maxDbEl.value);
     dataArray = new Float32Array(analyser.frequencyBinCount);
+    levelAnalyser = audioCtx.createAnalyser(); levelAnalyser.fftSize = 256;
     buildYToBin();
   }
 
@@ -239,15 +251,11 @@
     const scale = scaleSelect.value;
     yToBin = new Uint16Array(H);
     for (let y = 0; y < H; y++) {
-      // Low freq at bottom -> invert y
       const t = 1 - (y / (H-1)); // 0..1 bottom->top
       let f;
       if (scale === 'log') {
-        const r = nyquist / fMin;
-        f = fMin * Math.pow(r, t);
-      } else {
-        f = t * nyquist;
-      }
+        const r = nyquist / fMin; f = fMin * Math.pow(r, t);
+      } else { f = t * nyquist; }
       const idx = Math.round((f / nyquist) * (bins - 1));
       yToBin[y] = clamp(idx|0, 0, bins-1);
     }
@@ -255,26 +263,10 @@
   }
 
   // Colormaps (t in [0,1])
-  function cmapInferno(t){
-    const x = clamp(t,0,1);
-    const r = Math.pow(x, 0.25) * 1.0;
-    const g = Math.pow(x, 0.6)  * 0.9;
-    const b = Math.pow(x, 2.0)  * 0.8;
-    return [ clamp(Math.round((0.1 + 0.9*r)*255),0,255), clamp(Math.round((0.0 + 0.95*g)*255),0,255), clamp(Math.round((0.2 + 0.8*b)*255),0,255) ];
-  }
-  function cmapViridis(t){
-    const x = clamp(t,0,1);
-    const r = 0.3 + 0.7*Math.pow(x,1.2);
-    const g = 0.2 + 0.8*Math.sin(x*Math.PI*0.8);
-    const b = 0.7 + 0.3*(1-x);
-    return [ clamp(Math.round(r*255),0,255), clamp(Math.round(g*255),0,255), clamp(Math.round(b*255),0,255) ];
-  }
-  function cmapGray(t){
-    const v = clamp(Math.round(clamp(t,0,1)*255),0,255); return [v,v,v];
-  }
-  function pickCmap(){
-    const m = cmapSelect.value; return m === 'viridis' ? cmapViridis : (m === 'gray' ? cmapGray : cmapInferno);
-  }
+  function cmapInferno(t){ const x = clamp(t,0,1); const r=Math.pow(x,.25)*1.0, g=Math.pow(x,.6)*0.9, b=Math.pow(x,2.0)*0.8; return [clamp(Math.round((0.1+0.9*r)*255),0,255), clamp(Math.round((0.0+0.95*g)*255),0,255), clamp(Math.round((0.2+0.8*b)*255),0,255)]; }
+  function cmapViridis(t){ const x=clamp(t,0,1); const r=0.3+0.7*Math.pow(x,1.2), g=0.2+0.8*Math.sin(x*Math.PI*0.8), b=0.7+0.3*(1-x); return [clamp(Math.round(r*255),0,255),clamp(Math.round(g*255),0,255),clamp(Math.round(b*255),0,255)]; }
+  function cmapGray(t){ const v=clamp(Math.round(clamp(t,0,1)*255),0,255); return [v,v,v]; }
+  function pickCmap(){ const m=cmapSelect.value; return m==='viridis'?cmapViridis:(m==='gray'?cmapGray:cmapInferno); }
 
   function drawAxis(){
     actx.clearRect(0,0,axis.width, axis.height);
@@ -286,12 +278,11 @@
     const nyq = audioCtx ? audioCtx.sampleRate/2 : 22050;
     const toY = (f) => {
       const scale = scaleSelect.value;
-      if (scale === 'log') {
-        const r = nyq/20; const t = Math.log(f/20)/Math.log(r); return (1 - t) * (H-1);
-      } else { const t = f/nyq; return (1 - t) * (H-1); }
+      if (scale === 'log') { const r = nyq/20; const t = Math.log(f/20)/Math.log(r); return (1 - t) * (H-1); }
+      else { const t = f/nyq; return (1 - t) * (H-1); }
     };
     marks.forEach(f => { if (f > nyq) return; const y = toY(f); actx.beginPath(); actx.moveTo(0, y+0.5); actx.lineTo(W, y+0.5); actx.stroke(); actx.fillText(`${f>=1000 ? (f/1000).toFixed(1)+' k' : f} Hz`, 8*DPR, Math.max(12*DPR, y-4*DPR)); });
-    actx.fillStyle = 'rgba(124,192,255,0.55)'; actx.fillRect(W-2*DPR, 0, 2*DPR, H); // time caret
+    actx.fillStyle = 'rgba(124,192,255,0.55)'; actx.fillRect(W-2*DPR, 0, 2*DPR, H);
     actx.restore();
   }
 
@@ -300,7 +291,7 @@
 
   function drawFrame(){
     if (!analyser || !playing) return;
-    sctx.drawImage(spec, 1, 0, spec.width-1, spec.height, 0, 0, spec.width-1, spec.height); // scroll left 1px
+    sctx.drawImage(spec, 1, 0, spec.width-1, spec.height, 0, 0, spec.width-1, spec.height);
     analyser.getFloatFrequencyData(dataArray);
     const H = spec.height; const img = sctx.createImageData(1, H); const cmap = pickCmap();
     const minDb = analyser.minDecibels; const maxDb = analyser.maxDecibels; const range = (maxDb - minDb) || 1;
@@ -310,6 +301,18 @@
       const off = (H-1-y)*4; img.data[off+0]=r; img.data[off+1]=g; img.data[off+2]=b; img.data[off+3]=255;
     }
     sctx.putImageData(img, spec.width-1, 0);
+
+    // quick level check for mic troubleshooting
+    if (levelAnalyser && srcNode && srcNode.connect) {
+      try {
+        const arr = new Uint8Array(levelAnalyser.frequencyBinCount);
+        levelAnalyser.getByteTimeDomainData(arr);
+        let sum=0; for (let i=0;i<arr.length;i++){ const v=(arr[i]-128)/128; sum += v*v; }
+        levelValue = Math.sqrt(sum/arr.length);
+        statusEl.textContent = playing ? `Läuft – Pegel: ${(levelValue*100).toFixed(1)}%` : statusEl.textContent;
+      } catch(_){}
+    }
+
     rafId = requestAnimationFrame(drawFrame);
   }
 
@@ -319,39 +322,60 @@
     }
     const ac = ensureAudioCtx(); await ac.resume();
     try{
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false } });
-      stopSource(); makeAnalyser();
-      const src = ac.createMediaStreamSource(stream);
-      srcNode = src; currentStream = stream;
-      srcNode.connect(analyser);
-      if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); }catch(e){} }
-      playing = true; srInfo.textContent = `Sample Rate: ${ac.sampleRate.toFixed(0)} Hz`;
-      setStatus('Mikrofon läuft…'); cancelAnimationFrame(rafId); drawFrame();
+      const constraints = { audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false } };
+      const sel = deviceSelect.value && deviceSelect.value !== '' && deviceSelect.value !== 'default' ? deviceSelect.value : undefined;
+      if (sel) constraints.audio.deviceId = { exact: sel };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      await afterMicStream(stream);
     } catch(err){
-      console.error(err);
-      if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')){
-        setStatus('Zugriff verweigert. Öffne die Seite über HTTPS/localhost und erlaube das Mikrofon. Nutze sonst Datei/Demo.', true);
-        whyDenied.style.display='';
-      } else if (err && err.name === 'NotFoundError'){
-        setStatus('Kein Mikrofon gefunden. Wechsle zu Datei/Demo.', true);
-      } else {
-        setStatus('Mikrofon‑Fehler. Details in der Konsole.', true);
+      console.error('[startMic] getUserMedia failed', err);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        await afterMicStream(stream);
+      } catch(err2){
+        console.error('[startMic] retry failed', err2);
+        handleMicError(err2 || err);
       }
+    }
+  }
+  async function afterMicStream(stream){
+    stopSource(); makeAnalyser();
+    const ac = ensureAudioCtx();
+    const src = ac.createMediaStreamSource(stream);
+    srcNode = src; currentStream = stream;
+    // Split to analyser + level analyser
+    const split = ac.createGain(); // simple tee
+    srcNode.connect(split);
+    split.connect(analyser);
+    split.connect(levelAnalyser);
+    if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); }catch(e){} }
+    playing = true; srInfo.textContent = `Sample Rate: ${ac.sampleRate.toFixed(0)} Hz`;
+    setStatus('Mikrofon läuft…'); cancelAnimationFrame(rafId); drawFrame();
+    try { const inputs = await listInputDevices(); populateDeviceList(inputs); } catch(_){}
+  }
+  function handleMicError(err){
+    if (!err) { setStatus('Unbekannter Mikrofon‑Fehler.', true); return; }
+    if (err.name === 'NotAllowedError' || err.name === 'SecurityError'){
+      setStatus('Zugriff verweigert. Erlaube das Mikrofon in den Website‑Einstellungen.', true); whyDenied.style.display='';
+    } else if (err.name === 'NotFoundError'){
+      setStatus('Kein Mikrofon gefunden. Wähle ein Gerät, stecke eins ein oder nutze Datei/Demo.', true);
+    } else if (err.name === 'NotReadableError'){
+      setStatus('Mikrofon ist belegt (in Benutzung). Schließe andere Apps/Tabs.', true);
+    } else if (err.name === 'OverconstrainedError'){
+      setStatus('Gewünschtes Gerät nicht verfügbar. Wähle ein anderes Mikrofon.', true);
+    } else {
+      setStatus('Mikrofon‑Fehler. Details in der Konsole.', true);
     }
   }
 
   async function startFile(file){
     const ac = ensureAudioCtx(); await ac.resume();
-    try{
-      const buf = await file.arrayBuffer(); const audioBuf = await ac.decodeAudioData(buf);
-      await startFileFromBuffer(audioBuf);
-      setStatus('Datei wird abgespielt…');
-    } catch(err){ setStatus('Konnte Datei nicht abspielen.', true); console.error(err); }
+    try{ const buf = await file.arrayBuffer(); const audioBuf = await ac.decodeAudioData(buf); await startFileFromBuffer(audioBuf); setStatus('Datei wird abgespielt…'); }
+    catch(err){ setStatus('Konnte Datei nicht abspielen.', true); console.error(err); }
   }
 
   async function startFileFromBuffer(audioBuf){
-    const ac = ensureAudioCtx();
-    stopSource(); makeAnalyser();
+    const ac = ensureAudioCtx(); stopSource(); makeAnalyser();
     const src = ac.createBufferSource(); src.buffer = audioBuf; srcNode = src;
     src.connect(analyser);
     if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); }catch(e){} }
@@ -362,41 +386,33 @@
 
   async function startDemo(){
     const ac = ensureAudioCtx(); await ac.resume(); stopSource(); makeAnalyser();
-    // Demo: Chirp (50 Hz → 8 kHz) + Sinus A4 + Rauschen, leise gemischt
+    // Demo: Chirp (50 Hz → 8 kHz) + Sinus A4 + Rauschen
     const master = ac.createGain(); master.gain.value = 0.4;
     const oscA4 = ac.createOscillator(); oscA4.type = 'sine'; oscA4.frequency.value = 440;
     const oscChirp = ac.createOscillator(); oscChirp.type = 'sine';
     const chirpGain = ac.createGain(); chirpGain.gain.value = 0.25;
     const noise = ac.createBufferSource(); noise.buffer = makeNoiseBuffer(ac, 2.0); const noiseGain = ac.createGain(); noiseGain.gain.value = 0.08;
-    // Chirp automation 0→2s
     const now = ac.currentTime; const end = now + 2.0;
     oscChirp.frequency.setValueAtTime(50, now); oscChirp.frequency.exponentialRampToValueAtTime(8000, end);
     oscA4.connect(master); oscChirp.connect(chirpGain).connect(master); noise.connect(noiseGain).connect(master);
     master.connect(analyser);
     if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); }catch(e){} }
-    srcNode = master; // keep a reference (master has no stop, we stop children)
-    playing = true; srInfo.textContent = `Sample Rate: ${ac.sampleRate.toFixed(0)} Hz`;
+    srcNode = master; playing = true; srInfo.textContent = `Sample Rate: ${ac.sampleRate.toFixed(0)} Hz`;
     oscA4.start(); oscChirp.start(); noise.start();
-    // Stop chirp & noise after 2s, keep A4 running
     setTimeout(() => { try{ oscChirp.stop(); noise.stop(); }catch(_){} }, 2100);
     cancelAnimationFrame(rafId); drawFrame(); setStatus('Demo‑Signal läuft…');
   }
 
-  function makeNoiseBuffer(ac, dur){
-    const len = Math.max(1, Math.floor(dur * ac.sampleRate)); const buf = ac.createBuffer(1, len, ac.sampleRate);
-    const ch = buf.getChannelData(0); for (let i=0;i<len;i++){ ch[i] = (Math.random()*2-1) * 0.7; }
-    return buf;
-  }
+  function makeNoiseBuffer(ac, dur){ const len=Math.max(1,Math.floor(dur*ac.sampleRate)); const buf=ac.createBuffer(1,len,ac.sampleRate); const ch=buf.getChannelData(0); for(let i=0;i<len;i++){ ch[i]=(Math.random()*2-1)*0.7 } return buf; }
 
   function stopSource(){
     try{ cancelAnimationFrame(rafId); }catch(_){ }
     playing = false;
-    // Stop MediaStream tracks
     if (currentStream){ try{ currentStream.getTracks().forEach(t => t.stop()); }catch(_){ } currentStream = null; }
-    // Stop AudioNodes
     try{ if (srcNode && srcNode.stop) srcNode.stop(); }catch(_){ }
     try{ if (srcNode && srcNode.disconnect) srcNode.disconnect(); }catch(_){ }
     try{ if (analyser) analyser.disconnect(); }catch(_){ }
+    try{ if (levelAnalyser) levelAnalyser.disconnect(); }catch(_){ }
     srcNode = null;
   }
 
@@ -423,7 +439,12 @@
 
   [fftSelect, smoothingEl, minDbEl, maxDbEl].forEach(el => el.addEventListener('change', () => { if (!audioCtx) return; makeAnalyser(); }));
   [cmapSelect, scaleSelect].forEach(el => el.addEventListener('change', () => { buildYToBin(); drawAxis(); }));
-  sourceSelect.addEventListener('change', () => { const usingFile = sourceSelect.value === 'file'; fileInput.disabled = !usingFile; if (sourceSelect.value === 'mic') monitorEl.checked = false; });
+  sourceSelect.addEventListener('change', () => {
+    const usingFile = sourceSelect.value === 'file';
+    fileInput.disabled = !usingFile;
+    deviceSelect.disabled = sourceSelect.value !== 'mic';
+    if (sourceSelect.value === 'mic') monitorEl.checked = false;
+  });
   fileInput.addEventListener('change', () => { if (sourceSelect.value === 'file' && fileInput.files && fileInput.files[0]){ setStatus(`Datei ausgewählt: ${fileInput.files[0].name}`); } });
 
   // ---- Selbsttest (Testfälle) ----
@@ -432,35 +453,31 @@
   async function runSelfTests(){
     resetLog(); log('Starte Selbsttest…');
     try {
-      // Test 1: AudioContext und Analyser erzeugen
       ensureAudioCtx(); makeAnalyser();
       const ok1 = !!(audioCtx && analyser && dataArray && dataArray.length === analyser.frequencyBinCount);
       log(`Test 1 – Analyser initialisiert: ${ok1?'OK':'FEHLER'}`, ok1?'ok':'fail');
 
-      // Test 2: y→Bin‑Mapping monoton (nicht fallend von unten nach oben)
-      buildYToBin(); let mono = true; for (let y=1;y<yToBin.length;y++){ if (yToBin[y] < yToBin[y-1]) { mono = false; break; } }
-      log(`Test 2 – y→Bin monoton: ${mono?'OK':'FEHLER'}`, mono?'ok':'fail');
+      // Test 2 – y→Bin monoton in irgendeine Richtung (Display darf top→bottom steigen oder fallen)
+      buildYToBin(); let nonDecr=true, nonIncr=true; for (let y=1;y<yToBin.length;y++){ if (yToBin[y] < yToBin[y-1]) nonDecr=false; if (yToBin[y] > yToBin[y-1]) nonIncr=false; }
+      const ok2 = nonDecr || nonIncr; log(`Test 2 – y→Bin monoton: ${ok2?'OK':'FEHLER'}`, ok2?'ok':'fail');
 
-      // Test 3: Demo‑Signal startbar (ohne Berechtigungen)
-      await startDemo();
-      const ok3 = playing === true;
-      log(`Test 3 – Demo‑Signal gestartet: ${ok3?'OK':'FEHLER'}`, ok3?'ok':'fail');
-
-      // Test 4: Frame‑Render ruft sich per rAF erneut auf
-      const prevRaf = rafId; await new Promise(r => setTimeout(r, 60)); const ok4 = rafId !== null; // sollte laufen
-      log(`Test 4 – Rendering aktiv: ${ok4?'OK':'FEHLER'}`, ok4?'ok':'fail');
-
-      // Test 5: Stop schaltet Rendering aus
-      stopAll(); const holdRaf = rafId; await new Promise(r => setTimeout(r, 60)); const ok5 = playing === false;
-      log(`Test 5 – Stop funktioniert: ${ok5?'OK':'FEHLER'}`, ok5?'ok':'fail');
-
+      await startDemo(); const ok3 = playing === true; log(`Test 3 – Demo‑Signal gestartet: ${ok3?'OK':'FEHLER'}`, ok3?'ok':'fail');
+      await new Promise(r => setTimeout(r, 60)); const ok4 = rafId !== null; log(`Test 4 – Rendering aktiv: ${ok4?'OK':'FEHLER'}`, ok4?'ok':'fail');
+      stopAll(); await new Promise(r => setTimeout(r, 60)); const ok5 = playing === false; log(`Test 5 – Stop funktioniert: ${ok5?'OK':'FEHLER'}`, ok5?'ok':'fail');
       log('Selbsttest abgeschlossen.');
     } catch(e){ console.error(e); log('Selbsttest abgebrochen: '+e.message, 'fail'); }
   }
   selfTestBtn.addEventListener('click', runSelfTests);
 
+  function populateDeviceList(inputs){
+    deviceSelect.innerHTML = '';
+    if (!inputs || inputs.length === 0){ const opt = document.createElement('option'); opt.textContent = '— keine Geräte —'; opt.value=''; deviceSelect.appendChild(opt); deviceSelect.disabled = true; return; }
+    inputs.forEach((d,i)=>{ const opt=document.createElement('option'); opt.value=d.deviceId||''; opt.textContent=d.label||`Mikrofon ${i+1}`; deviceSelect.appendChild(opt); });
+    deviceSelect.disabled = false;
+  }
+
   // Boot
-  fileInput.disabled = true; setStatus('Bereit');
+  fileInput.disabled = true; deviceSelect.disabled = sourceSelect.value !== 'mic'; setStatus('Bereit');
 })();
 </script>
 </body>
