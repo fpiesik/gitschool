@@ -41,6 +41,9 @@
     #levelWrap{display:flex;align-items:center;gap:8px;margin-left:8px}
     #levelBarOuter{width:120px;height:8px;border-radius:999px;background:#0e1726;border:1px solid #213147;overflow:hidden}
     #levelBar{height:100%;width:0%}
+    /* Gain-Fader */
+    #gainGroup{display:flex;align-items:center;gap:8px;margin-left:8px}
+    #gainFader{width:160px}
   </style>
 </head>
 <body>
@@ -53,6 +56,10 @@
         <div id="levelWrap" title="Eingangspegel">
           <div id="levelBarOuter"><div id="levelBar"></div></div>
           <span id="levelNum" style="min-width:46px;display:inline-block;text-align:right">0%</span>
+        </div>
+        <div id="gainGroup" title="Eingangs-Gain (vor Analyse & Monitoring)">
+          <input id="gainFader" type="range" min="-24" max="12" step="0.1" value="0" />
+          <span id="gainVal">0.0 dB</span>
         </div>
       </div>
       <div class="right">
@@ -165,6 +172,7 @@
     cmap: 'inferno',         // 'inferno' | 'viridis' | 'gray'
     monitor: false,          // Audioausgabe (Feedback vermeiden)
     invert: false,           // Spektrum invertieren
+    inputGainDb: 0.0,        // Eingangs-Gain in dB
     autostart: true,         // beim Laden automatisch starten
     hideSettings: true       // Einstellungen beim Start ausblenden
   };
@@ -201,6 +209,8 @@
   const testLogEl    = document.getElementById('testLog');
   const levelBar     = document.getElementById('levelBar');
   const levelNum     = document.getElementById('levelNum');
+  const gainFader    = document.getElementById('gainFader');
+  const gainVal      = document.getElementById('gainVal');
 
   const DPR = Math.min(2, window.devicePixelRatio || 1);
 
@@ -238,6 +248,8 @@
     cmapSelect.value = DEFAULTS.cmap;
     monitorEl.checked = !!DEFAULTS.monitor;
     invertEl.checked = !!DEFAULTS.invert;
+    gainFader.value = String(DEFAULTS.inputGainDb);
+    gainVal.textContent = formatDb(parseFloat(gainFader.value||'0'));
 
     if (DEFAULTS.hideSettings) hideSettings(true);
 
@@ -253,7 +265,7 @@
       document.querySelector('#sourceSelect option[value="mic"]').disabled = true;
     }
 
-    // Autostart, falls erlaubt
+    // Autostart, falls erlaubt (manche Browser verlangen User-Geste)
     if (DEFAULTS.autostart) {
       try { await startByMode(sourceSelect.value); }
       catch(e){ setStatus('Autostart blockiert – klicke Start', true); }
@@ -274,6 +286,7 @@
   let rafId = null;
   let playing = false;
   let levelAnalyser = null; // for level meter
+  let inputGainNode = null; // master pre-analyser gain
 
   // Rendering helpers
   let yToBin = []; // lookup mapping canvas y -> bin index
@@ -305,6 +318,8 @@
   }
 
   function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+  function dbToLin(db){ return Math.pow(10, db/20); }
+  function formatDb(db){ return `${db>=0?'+':''}${db.toFixed(1)} dB`; }
 
   function buildYToBin(){
     if (!audioCtx || !analyser) return;
@@ -317,9 +332,8 @@
     for (let y = 0; y < H; y++) {
       const t = 1 - (y / (H-1)); // 0..1 bottom->top (top=1 => hohe Frequenzen oben)
       let f;
-      if (scale === 'log') {
-        const r = nyquist / fMin; f = fMin * Math.pow(r, t);
-      } else { f = t * nyquist; }
+      if (scale === 'log') { const r = nyquist / fMin; f = fMin * Math.pow(r, t); }
+      else { f = t * nyquist; }
       const idx = Math.round((f / nyquist) * (bins - 1));
       yToBin[y] = clamp(idx|0, 0, bins-1);
     }
@@ -365,7 +379,7 @@
     for (let y=0; y<H; y++){
       const idx = yToBin[y] || 0; const db = dataArray[idx];
       const t = clamp((db - minDb) / range, 0, 1); const [r,g,b] = cmap(t);
-      const py = invert ? (H-1-y) : y; // <<< richtige Ausrichtung
+      const py = invert ? (H-1-y) : y; // richtige Ausrichtung optional invertierbar
       const off = py*4;
       img.data[off+0]=r; img.data[off+1]=g; img.data[off+2]=b; img.data[off+3]=255;
     }
@@ -394,6 +408,20 @@
     return startDemo();
   }
 
+  function ensureInputGainNode(){
+    const ac = ensureAudioCtx();
+    inputGainNode = ac.createGain();
+    applyGain();
+    return inputGainNode;
+  }
+
+  function applyGain(){
+    const db = parseFloat(gainFader.value || '0');
+    gainVal.textContent = formatDb(db);
+    if (!audioCtx || !inputGainNode) return;
+    inputGainNode.gain.setTargetAtTime(dbToLin(db), audioCtx.currentTime, 0.01);
+  }
+
   async function startMic(){
     if (!isSecure() || !micSupported()){
       setStatus('Mikrofon nicht verfügbar – verwende Audiodatei oder Demo.', true); whyDenied.style.display=''; return;
@@ -416,7 +444,12 @@
     const ac = ensureAudioCtx();
     const src = ac.createMediaStreamSource(stream);
     srcNode = src; currentStream = stream;
-    const tee = ac.createGain(); srcNode.connect(tee); tee.connect(analyser); tee.connect(levelAnalyser);
+    const gain = ensureInputGainNode();
+    const tee = ac.createGain();
+    srcNode.connect(gain);
+    gain.connect(tee);
+    tee.connect(analyser);
+    tee.connect(levelAnalyser);
     if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); }catch(e){} }
     playing = true; srInfo.textContent = `Sample Rate: ${ac.sampleRate.toFixed(0)} Hz`;
     setStatus('Mikrofon läuft…'); cancelAnimationFrame(rafId); drawFrame();
@@ -445,7 +478,9 @@
   async function startFileFromBuffer(audioBuf){
     const ac = ensureAudioCtx(); stopSource(); makeAnalyser();
     const src = ac.createBufferSource(); src.buffer = audioBuf; srcNode = src;
-    src.connect(analyser);
+    const gain = ensureInputGainNode();
+    src.connect(gain);
+    gain.connect(analyser);
     if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); }catch(e){} }
     src.onended = () => { playing = false; setStatus('Wiedergabe beendet'); };
     srInfo.textContent = `Sample Rate: ${ac.sampleRate.toFixed(0)} Hz`;
@@ -462,7 +497,9 @@
     const now = ac.currentTime; const end = now + 2.0;
     oscChirp.frequency.setValueAtTime(50, now); oscChirp.frequency.exponentialRampToValueAtTime(8000, end);
     oscA4.connect(master); oscChirp.connect(chirpGain).connect(master); noise.connect(noiseGain).connect(master);
-    master.connect(analyser);
+    const gain = ensureInputGainNode();
+    master.connect(gain);
+    gain.connect(analyser);
     if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); }catch(e){} }
     srcNode = master; playing = true; srInfo.textContent = `Sample Rate: ${ac.sampleRate.toFixed(0)} Hz`;
     oscA4.start(); oscChirp.start(); noise.start();
@@ -480,7 +517,8 @@
     try{ if (srcNode && srcNode.disconnect) srcNode.disconnect(); }catch(_){ }
     try{ if (analyser) analyser.disconnect(); }catch(_){ }
     try{ if (levelAnalyser) levelAnalyser.disconnect(); }catch(_){ }
-    srcNode = null;
+    try{ if (inputGainNode) inputGainNode.disconnect(); }catch(_){ }
+    srcNode = null; inputGainNode = null;
   }
 
   function stopAll(){ stopSource(); setStatus('Gestoppt'); }
@@ -505,6 +543,7 @@
     if (sourceSelect.value === 'mic') monitorEl.checked = false;
   });
   fileInput.addEventListener('change', () => { if (sourceSelect.value === 'file' && fileInput.files && fileInput.files[0]){ setStatus(`Datei ausgewählt: ${fileInput.files[0].name}`); } });
+  gainFader.addEventListener('input', applyGain);
 
   // ---- Selbsttest (Testfälle) ----
   function log(msg, cls){ const span = document.createElement('div'); span.textContent = msg; if (cls) span.className = cls; testLogEl.appendChild(span); testLogEl.scrollTop = testLogEl.scrollHeight; }
