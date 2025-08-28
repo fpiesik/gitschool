@@ -156,7 +156,7 @@
 (() => {
   // ===== Konfig (Default-Einstellungen zentral änderbar) =====
   const DEFAULTS = {
-    source: 'demo',          // 'mic' | 'file' | 'demo'
+    source: 'mic',          // 'mic' | 'file' | 'demo'
     fftSize: 2048,
     smoothing: 0.6,
     minDb: -100,
@@ -327,7 +327,7 @@
   }
 
   // Colormaps (t in [0,1])
-  function cmapInferno(t){ const x = clamp(t,0,1); const r=Math.pow(x,.25)*1.0, g=Math.pow(x,.6)*0.9, b=Math.pow(x,2.0)*0.8; return [clamp(Math.round((0.1+0.9*r)*255),0,255), clamp(Math.round((0.0+0.95*g)*255),0,255), clamp(Math.round((0.2+0.8$b)*255),0,255)]; }
+  function cmapInferno(t){ const x = clamp(t,0,1); const r=Math.pow(x,.25)*1.0, g=Math.pow(x,.6)*0.9, b=Math.pow(x,2.0)*0.8; return [clamp(Math.round((0.1+0.9*r)*255),0,255), clamp(Math.round((0.0+0.95*g)*255),0,255), clamp(Math.round((0.2+0.8*b)*255),0,255)]; }
   function cmapViridis(t){ const x=clamp(t,0,1); const r=0.3+0.7*Math.pow(x,1.2), g=0.2+0.8*Math.sin(x*Math.PI*0.8), b=0.7+0.3*(1-x); return [clamp(Math.round(r*255),0,255),clamp(Math.round(g*255),0,255),clamp(Math.round(b*255),0,255)]; }
   function cmapGray(t){ const v=clamp(Math.round(clamp(t,0,1)*255),0,255); return [v,v,v]; }
   function pickCmap(){ const m=cmapSelect.value; return m==='viridis'?cmapViridis:(m==='gray'?cmapGray:cmapInferno); }
