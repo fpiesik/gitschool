@@ -3,9 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spektrogramm – Web Audio (mit Fallbacks & PipeWire)</title>
+  <title>Spektrogramm – Web Audio (GH Pages ready)</title>
   <style>
-    :root { --bg:#0b0f14; --panel:#121822; --text:#e7ecf3; --muted:#aab7c4; --accent:#7cc0ff; --warn:#ffb86c; --ok:#9cffb6; }
+    :root {
+      --bg:#0b0f14; --panel:#121822; --text:#e7ecf3; --muted:#aab7c4; --accent:#7cc0ff; --warn:#ffb86c; --ok:#9cffb6;
+    }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans";background:radial-gradient(1200px 800px at 70% -10%,#132034 0%,var(--bg) 50%);color:var(--text)}
@@ -62,7 +64,6 @@
       </div>
       <div class="right">
         <button id="toggleSettings" class="ghost" aria-expanded="false">Einstellungen</button>
-        <button id="refreshDevsBtn" class="ghost" title="Geräteliste aktualisieren (z. B. nach dem Anstecken)">Geräte aktualisieren</button>
         <button id="snapBtn" class="ghost">PNG</button>
         <button id="clearBtn" class="ghost">Leeren</button>
         <button id="selfTestBtn" class="ghost" title="Läuft ohne Mikrofon‑Rechte">Selbsttest</button>
@@ -72,15 +73,14 @@
     <div id="controlsPanel" class="controls hidden">
       <label>Quelle
         <select id="sourceSelect">
-          <option value="mic">Mikrofon (PipeWire/ALSA)</option>
-          <option value="system">System/TAB‑Audio (getDisplayMedia)</option>
+          <option value="mic">Mikrofon</option>
           <option value="file">Audiodatei</option>
           <option value="demo">Demo‑Signal</option>
         </select>
       </label>
       <label>Mikrofon wählen
         <select id="deviceSelect" disabled>
-          <option value="default">Systemstandard</option>
+          <option>— keine Geräte —</option>
         </select>
       </label>
       <label>Audiodatei
@@ -125,7 +125,7 @@
       </label>
     </div>
 
-    <div class="hint" id="permHint">Hinweis: Unter Linux/PipeWire erscheint der Browser in qpwgraph meist als <em>WebRTC/Chromium/Portal</em>. Starte „Mikrofon“ und verbinde in qpwgraph deine USB‑Soundkarte → Browser‑Eingang.</div>
+    <div class="hint" id="permHint">Tipp: Für Mikrofon‑Aufnahmen muss die Seite über HTTPS oder auf <code>localhost</code> laufen.</div>
     <details class="hintbox" id="whyDenied" style="display:none">
       <summary>Warum wurde der Mikrofon‑Zugriff abgelehnt?</summary>
       <ul>
@@ -160,11 +160,10 @@
   </main>
 
 <script>
-(function(){
-  'use strict';
+(() => {
   // ===== Konfig (Default-Einstellungen zentral änderbar) =====
   const DEFAULTS = {
-    source: 'mic',          // 'mic' | 'system' | 'file' | 'demo'
+    source: 'mic',          // 'mic' | 'file' | 'demo'
     fftSize: 2048,
     smoothing: 0.6,
     minDb: -100,
@@ -174,8 +173,8 @@
     monitor: false,          // Audioausgabe (Feedback vermeiden)
     invert: false,           // Spektrum invertieren
     inputGainDb: 0.0,        // Eingangs-Gain in dB
-    levelSmoothTau: 0.25,    // Pegelglättung (s)
-    autostart: true,         // beim Laden automatisch starten (evtl. Browser-Prompt nötig)
+    levelSmoothTau: 0.25,     // Zeitkonstante der Pegelglättung (Sekunden)
+    autostart: true,         // beim Laden automatisch starten
     hideSettings: true       // Einstellungen beim Start ausblenden
   };
 
@@ -187,7 +186,6 @@
   const startBtn = document.getElementById('startBtn');
   const stopBtn  = document.getElementById('stopBtn');
   const toggleSettingsBtn = document.getElementById('toggleSettings');
-  const refreshDevsBtn = document.getElementById('refreshDevsBtn');
   const controlsPanel = document.getElementById('controlsPanel');
   const snapBtn  = document.getElementById('snapBtn');
   const clearBtn = document.getElementById('clearBtn');
@@ -226,13 +224,13 @@
   async function listInputDevices(){
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return [];
     const devices = await navigator.mediaDevices.enumerateDevices();
-    return devices.filter(function(d){ return d.kind === 'audioinput'; });
+    return devices.filter(d => d.kind === 'audioinput');
   }
 
   // Layout / DPI
   function fitCanvases() {
     const rect = spec.getBoundingClientRect();
-    [spec, axis].forEach(function(cv){ cv.width = Math.round(rect.width*DPR); cv.height = Math.round(rect.height*DPR); });
+    [spec, axis].forEach(cv => { cv.width = Math.round(rect.width*DPR); cv.height = Math.round(rect.height*DPR); });
     sctx.imageSmoothingEnabled = false;
     drawAxis();
   }
@@ -262,11 +260,16 @@
       if (sourceSelect.value === 'mic') sourceSelect.value = 'demo';
       whyDenied.style.display = '';
     }
-    await refreshDevices();
+    if (micSupported()) {
+      try { const inputs = await listInputDevices(); populateDeviceList(inputs); } catch(_){ }
+    } else {
+      document.querySelector('#sourceSelect option[value="mic"]').disabled = true;
+    }
 
+    // Autostart, falls erlaubt (manche Browser verlangen User-Geste)
     if (DEFAULTS.autostart) {
-      try { await startWithFallbackOrdered(sourceSelect.value); }
-      catch (e) { setStatus('Autostart blockiert – klicke Start', true); }
+      try { await startByMode(sourceSelect.value); }
+      catch(e){ setStatus('Autostart blockiert – klicke Start', true); }
     }
   }
 
@@ -292,19 +295,10 @@
   // Rendering helpers
   let yToBin = []; // lookup mapping canvas y -> bin index
 
-  function setStatus(msg, isError){
-    if (typeof isError === 'undefined') isError = false;
+  function setStatus(msg, isError=false){
     statusEl.textContent = msg;
     statusEl.className = isError ? 'status error' : 'status';
   }
-  // Sichtbare globale Fehlermeldungen
-  window.addEventListener('error', function(e){
-    setStatus('Scriptfehler: ' + (e && e.message ? e.message : e), true);
-  });
-  window.addEventListener('unhandledrejection', function(e){
-    const msg = (e && e.reason && (e.reason.message || e.reason)) || 'Unbekannter Fehler';
-    setStatus('Fehler: ' + msg, true);
-  });
 
   function ensureAudioCtx(){
     if (!audioCtx) {
@@ -316,7 +310,7 @@
 
   function makeAnalyser(){
     if (!audioCtx) return;
-    if (analyser) try { analyser.disconnect(); } catch (e) {}
+    if (analyser) analyser.disconnect();
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = parseInt(fftSelect.value, 10);
     analyser.smoothingTimeConstant = clamp(parseFloat(smoothingEl.value), 0, 0.99);
@@ -329,7 +323,7 @@
 
   function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
   function dbToLin(db){ return Math.pow(10, db/20); }
-  function formatDb(db){ return (db>=0?'+':'') + db.toFixed(1) + ' dB'; }
+  function formatDb(db){ return `${db>=0?'+':''}${db.toFixed(1)} dB`; }
 
   function buildYToBin(){
     if (!audioCtx || !analyser) return;
@@ -351,16 +345,8 @@
   }
 
   // Colormaps (t in [0,1])
-  function cmapInferno(t){
-    const x = clamp(t,0,1);
-    const r=Math.pow(x,.25)*1.0, g=Math.pow(x,.6)*0.9, b=Math.pow(x,2.0)*0.8;
-    return [clamp(Math.round((0.1+0.9*r)*255),0,255), clamp(Math.round((0.0+0.95*g)*255),0,255), clamp(Math.round((0.2+0.8*b)*255),0,255)];
-  }
-  function cmapViridis(t){
-    const x=clamp(t,0,1);
-    const r=0.3+0.7*Math.pow(x,1.2), g=0.2+0.8*Math.sin(x*Math.PI*0.8), b=0.7+0.3*(1-x);
-    return [clamp(Math.round(r*255),0,255),clamp(Math.round(g*255),0,255),clamp(Math.round(b*255),0,255)];
-  }
+  function cmapInferno(t){ const x = clamp(t,0,1); const r=Math.pow(x,.25)*1.0, g=Math.pow(x,.6)*0.9, b=Math.pow(x,2.0)*0.8; return [clamp(Math.round((0.1+0.9*r)*255),0,255), clamp(Math.round((0.0+0.95*g)*255),0,255), clamp(Math.round((0.2+0.8*b)*255),0,255)]; }
+  function cmapViridis(t){ const x=clamp(t,0,1); const r=0.3+0.7*Math.pow(x,1.2), g=0.2+0.8*Math.sin(x*Math.PI*0.8), b=0.7+0.3*(1-x); return [clamp(Math.round(r*255),0,255),clamp(Math.round(g*255),0,255),clamp(Math.round(b*255),0,255)]; }
   function cmapGray(t){ const v=clamp(Math.round(clamp(t,0,1)*255),0,255); return [v,v,v]; }
   function pickCmap(){ const m=cmapSelect.value; return m==='viridis'?cmapViridis:(m==='gray'?cmapGray:cmapInferno); }
 
@@ -369,15 +355,15 @@
     actx.save();
     const W = axis.width, H = axis.height;
     actx.strokeStyle = 'rgba(255,255,255,0.08)'; actx.lineWidth = 1;
-    actx.font = (12*DPR) + 'px ui-sans-serif, system-ui'; actx.fillStyle = 'rgba(200,220,240,0.8)';
+    actx.font = `${12*DPR}px ui-sans-serif, system-ui`; actx.fillStyle = 'rgba(200,220,240,0.8)';
     const marks = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000];
     const nyq = audioCtx ? audioCtx.sampleRate/2 : 22050;
-    function toY(f){
+    const toY = (f) => {
       const scale = scaleSelect.value;
       if (scale === 'log') { const r = nyq/20; const t = Math.log(f/20)/Math.log(r); return (1 - t) * (H-1); }
       else { const t = f/nyq; return (1 - t) * (H-1); }
-    }
-    marks.forEach(function(f){ if (f > nyq) return; const y = toY(f); actx.beginPath(); actx.moveTo(0, y+0.5); actx.lineTo(W, y+0.5); actx.stroke(); actx.fillText((f>=1000 ? (f/1000).toFixed(1)+' k' : f) + ' Hz', 8*DPR, Math.max(12*DPR, y-4*DPR)); });
+    };
+    marks.forEach(f => { if (f > nyq) return; const y = toY(f); actx.beginPath(); actx.moveTo(0, y+0.5); actx.lineTo(W, y+0.5); actx.stroke(); actx.fillText(`${f>=1000 ? (f/1000).toFixed(1)+' k' : f} Hz`, 8*DPR, Math.max(12*DPR, y-4*DPR)); });
     actx.fillStyle = 'rgba(124,192,255,0.55)'; actx.fillRect(W-2*DPR, 0, 2*DPR, H);
     actx.restore();
   }
@@ -387,6 +373,7 @@
 
   function drawFrame(){
     if (!analyser || !playing) return;
+    // scroll left 1px
     sctx.drawImage(spec, 1, 0, spec.width-1, spec.height, 0, 0, spec.width-1, spec.height);
 
     analyser.getFloatFrequencyData(dataArray);
@@ -395,23 +382,29 @@
     const invert = !!invertEl.checked;
     for (let y=0; y<H; y++){
       const idx = yToBin[y] || 0; const db = dataArray[idx];
-      const t = clamp((db - minDb) / range, 0, 1); const c = cmap(t);
-      const r=c[0], g=c[1], b=c[2];
-      const py = invert ? (H-1-y) : y; const off = py*4;
+      const t = clamp((db - minDb) / range, 0, 1); const [r,g,b] = cmap(t);
+      const py = invert ? (H-1-y) : y; // richtige Ausrichtung optional invertierbar
+      const off = py*4;
       img.data[off+0]=r; img.data[off+1]=g; img.data[off+2]=b; img.data[off+3]=255;
     }
     sctx.putImageData(img, spec.width-1, 0);
 
-    // Pegelanzeige (EMA)
+    // Pegelanzeige (RMS aus TimeDomain)
     if (levelAnalyser){
       if (!levelBuf || levelBuf.length !== levelAnalyser.fftSize) levelBuf = new Uint8Array(levelAnalyser.fftSize);
       levelAnalyser.getByteTimeDomainData(levelBuf);
       let sum=0; for (let i=0;i<levelBuf.length;i++){ const v=(levelBuf[i]-128)/128; sum += v*v; }
-      const rms = Math.sqrt(sum/levelBuf.length);
-      const now = performance.now(); const dt = lastLevelTs ? (now-lastLevelTs)/1000 : 0; lastLevelTs = now;
-      const tau = DEFAULTS.levelSmoothTau; const alpha = dt ? 1 - Math.exp(-dt/tau) : 1; levelEMA += alpha * (rms - levelEMA);
+      const rms = Math.sqrt(sum/levelBuf.length); // ~0..1
+      // Zeitbasierte Exponentialglättung
+      const now = performance.now();
+      const dt = lastLevelTs ? (now - lastLevelTs)/1000 : 0; lastLevelTs = now;
+      const tau = DEFAULTS.levelSmoothTau; // s
+      const alpha = dt ? 1 - Math.exp(-dt / tau) : 1; // 0..1
+      levelEMA += alpha * (rms - levelEMA);
       const pct = Math.min(100, Math.max(0, Math.round(levelEMA*100)));
-      levelBar.style.width = pct+"%"; levelBar.style.background = 'linear-gradient(90deg, #2a6fb0, #7cc0ff)'; levelNum.textContent = pct+"%";
+      levelBar.style.width = pct+"%";
+      levelBar.style.background = `linear-gradient(90deg, #2a6fb0, #7cc0ff)`;
+      levelNum.textContent = pct+"%";
     }
 
     rafId = requestAnimationFrame(drawFrame);
@@ -419,7 +412,6 @@
 
   async function startByMode(mode){
     if (mode === 'mic') return startMic();
-    if (mode === 'system') return startSystem();
     if (mode === 'file') {
       const f = fileInput.files && fileInput.files[0]; if (!f) { setStatus('Bitte zuerst eine Audiodatei wählen.', true); return; }
       return startFile(f);
@@ -427,61 +419,37 @@
     return startDemo();
   }
 
-  // Fallback-Kette
-  async function startWithFallbackOrdered(pref){
-    const orderMap = { mic: ['mic','system','demo'], system: ['system','mic','demo'], file: ['file','demo'], demo: ['demo'] };
-    const labels   = { mic:'Mikrofon', system:'System/TAB‑Audio', file:'Datei', demo:'Demo' };
-    const order = orderMap[pref] || ['mic','system','demo'];
-    for (let i=0; i<order.length; i++){
-      const kind = order[i];
-      const ok = await tryStart(kind);
-      if (ok){ if (kind !== pref) setStatus('Fallback: ' + labels[kind] + ' gestartet', false); return true; }
-    }
-    setStatus('Konnte keine Quelle starten. Prüfe Berechtigungen/Geräte.', true);
-    return false;
-  }
-  async function tryStart(kind){
-    try { await startByMode(kind); } catch (e) {}
-    // kleine Wartezeit, damit playing gesetzt werden kann
-    await new Promise(function(r){ setTimeout(r, 250); });
-    return !!playing;
+  function ensureInputGainNode(){
+    const ac = ensureAudioCtx();
+    inputGainNode = ac.createGain();
+    applyGain();
+    return inputGainNode;
   }
 
-  function ensureInputGainNode(){ const ac = ensureAudioCtx(); inputGainNode = ac.createGain(); applyGain(); return inputGainNode; }
-  function applyGain(){ const db = parseFloat(gainFader.value || '0'); gainVal.textContent = formatDb(db); if (!audioCtx || !inputGainNode) return; inputGainNode.gain.setTargetAtTime(dbToLin(db), audioCtx.currentTime, 0.01); }
+  function applyGain(){
+    const db = parseFloat(gainFader.value || '0');
+    gainVal.textContent = formatDb(db);
+    if (!audioCtx || !inputGainNode) return;
+    inputGainNode.gain.setTargetAtTime(dbToLin(db), audioCtx.currentTime, 0.01);
+  }
 
   async function startMic(){
     if (!isSecure() || !micSupported()){
-      setStatus('Mikrofon nicht verfügbar – verwende System/TAB, Datei oder Demo.', true); whyDenied.style.display=''; return;
+      setStatus('Mikrofon nicht verfügbar – verwende Audiodatei oder Demo.', true); whyDenied.style.display=''; return;
     }
     const ac = ensureAudioCtx(); await ac.resume();
     try{
       const constraints = { audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false } };
       const sel = deviceSelect.value && deviceSelect.value !== '' && deviceSelect.value !== 'default' ? deviceSelect.value : undefined;
-      if (sel) constraints.audio.deviceId = { exact: sel }; else constraints.audio.deviceId = { ideal: 'default' };
+      if (sel) constraints.audio.deviceId = { exact: sel };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       await afterMicStream(stream);
-    } catch (err){
+    } catch(err){
       console.error('[startMic] getUserMedia failed', err);
       try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); await afterMicStream(stream); }
-      catch (err2){ console.error('[startMic] retry failed', err2); handleMicError(err2 || err); }
+      catch(err2){ console.error('[startMic] retry failed', err2); handleMicError(err2 || err); }
     }
   }
-
-  async function startSystem(){
-    const ac = ensureAudioCtx(); await ac.resume();
-    try{
-      const disp = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-      // Video sofort stoppen (wir brauchen nur Audio)
-      const vids = disp.getVideoTracks(); for (let i=0;i<vids.length;i++){ try { vids[i].stop(); } catch (e) {} }
-      await afterMicStream(disp);
-      setStatus('System/TAB‑Audio läuft…');
-    } catch (err){
-      console.error('[startSystem] getDisplayMedia failed', err);
-      setStatus('Konnte System/TAB‑Audio nicht erfassen. Browser‑Freigabe nötig.', true);
-    }
-  }
-
   async function afterMicStream(stream){
     stopSource(); makeAnalyser();
     const ac = ensureAudioCtx();
@@ -489,20 +457,21 @@
     srcNode = src; currentStream = stream;
     const gain = ensureInputGainNode();
     const tee = ac.createGain();
-    srcNode.connect(gain); gain.connect(tee);
-    tee.connect(analyser); tee.connect(levelAnalyser);
-    if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); } catch (e) {} }
-    playing = true; srInfo.textContent = 'Sample Rate: ' + ac.sampleRate.toFixed(0) + ' Hz';
-    setStatus('Audio läuft…'); cancelAnimationFrame(rafId); drawFrame();
-    try { const inputs = await listInputDevices(); populateDeviceList(inputs); } catch (e) {}
+    srcNode.connect(gain);
+    gain.connect(tee);
+    tee.connect(analyser);
+    tee.connect(levelAnalyser);
+    if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); }catch(e){} }
+    playing = true; srInfo.textContent = `Sample Rate: ${ac.sampleRate.toFixed(0)} Hz`;
+    setStatus('Mikrofon läuft…'); cancelAnimationFrame(rafId); drawFrame();
+    try { const inputs = await listInputDevices(); populateDeviceList(inputs); } catch(_){ }
   }
-
   function handleMicError(err){
     if (!err) { setStatus('Unbekannter Mikrofon‑Fehler.', true); return; }
     if (err.name === 'NotAllowedError' || err.name === 'SecurityError'){
       setStatus('Zugriff verweigert. Erlaube das Mikrofon in den Website‑Einstellungen.', true); whyDenied.style.display='';
     } else if (err.name === 'NotFoundError'){
-      setStatus('Kein Mikrofon gefunden. Wähle ein Gerät, stecke eins ein oder nutze System/TAB, Datei oder Demo.', true);
+      setStatus('Kein Mikrofon gefunden. Wähle ein Gerät, stecke eins ein oder nutze Datei/Demo.', true);
     } else if (err.name === 'NotReadableError'){
       setStatus('Mikrofon ist belegt (in Benutzung). Schließe andere Apps/Tabs.', true);
     } else if (err.name === 'OverconstrainedError'){
@@ -514,18 +483,18 @@
 
   async function startFile(file){
     const ac = ensureAudioCtx(); await ac.resume();
-    try{
-      const buf = await file.arrayBuffer(); const audioBuf = await ac.decodeAudioData(buf);
-      await startFileFromBuffer(audioBuf); setStatus('Datei wird abgespielt…');
-    } catch (err){ setStatus('Konnte Datei nicht abspielen.', true); console.error(err); }
+    try{ const buf = await file.arrayBuffer(); const audioBuf = await ac.decodeAudioData(buf); await startFileFromBuffer(audioBuf); setStatus('Datei wird abgespielt…'); }
+    catch(err){ setStatus('Konnte Datei nicht abspielen.', true); console.error(err); }
   }
   async function startFileFromBuffer(audioBuf){
     const ac = ensureAudioCtx(); stopSource(); makeAnalyser();
     const src = ac.createBufferSource(); src.buffer = audioBuf; srcNode = src;
-    const gain = ensureInputGainNode(); src.connect(gain); gain.connect(analyser);
-    if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); } catch (e) {} }
-    src.onended = function(){ playing = false; setStatus('Wiedergabe beendet'); };
-    srInfo.textContent = 'Sample Rate: ' + ac.sampleRate.toFixed(0) + ' Hz';
+    const gain = ensureInputGainNode();
+    src.connect(gain);
+    gain.connect(analyser);
+    if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); }catch(e){} }
+    src.onended = () => { playing = false; setStatus('Wiedergabe beendet'); };
+    srInfo.textContent = `Sample Rate: ${ac.sampleRate.toFixed(0)} Hz`;
     src.start(); playing = true; cancelAnimationFrame(rafId); drawFrame();
   }
 
@@ -539,60 +508,53 @@
     const now = ac.currentTime; const end = now + 2.0;
     oscChirp.frequency.setValueAtTime(50, now); oscChirp.frequency.exponentialRampToValueAtTime(8000, end);
     oscA4.connect(master); oscChirp.connect(chirpGain).connect(master); noise.connect(noiseGain).connect(master);
-    const gain = ensureInputGainNode(); master.connect(gain); gain.connect(analyser);
-    if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); } catch (e) {} }
-    srcNode = master; playing = true; srInfo.textContent = 'Sample Rate: ' + ac.sampleRate.toFixed(0) + ' Hz';
+    const gain = ensureInputGainNode();
+    master.connect(gain);
+    gain.connect(analyser);
+    if (monitorEl.checked) analyser.connect(ac.destination); else { try{ analyser.disconnect(); }catch(e){} }
+    srcNode = master; playing = true; srInfo.textContent = `Sample Rate: ${ac.sampleRate.toFixed(0)} Hz`;
     oscA4.start(); oscChirp.start(); noise.start();
-    setTimeout(function(){ try{ oscChirp.stop(); noise.stop(); } catch (e) {} }, 2100);
+    setTimeout(() => { try{ oscChirp.stop(); noise.stop(); }catch(_){} }, 2100);
     cancelAnimationFrame(rafId); drawFrame(); setStatus('Demo‑Signal läuft…');
   }
 
-  function makeNoiseBuffer(ac, dur){ const len=Math.max(1,Math.floor(dur*ac.sampleRate)); const buf=ac.createBuffer(1,len,ac.sampleRate); const ch=buf.getChannelData(0); for(let i=0;i<len;i++){ ch[i]=(Math.random()*2-1)*0.7; } return buf; }
+  function makeNoiseBuffer(ac, dur){ const len=Math.max(1,Math.floor(dur*ac.sampleRate)); const buf=ac.createBuffer(1,len,ac.sampleRate); const ch=buf.getChannelData(0); for(let i=0;i<len;i++){ ch[i]=(Math.random()*2-1)*0.7 } return buf; }
 
   function stopSource(){
-    try { cancelAnimationFrame(rafId); } catch (e) {}
+    try{ cancelAnimationFrame(rafId); }catch(_){ }
     playing = false;
-    if (currentStream){ try { currentStream.getTracks().forEach(function(t){ t.stop(); }); } catch (e) {} currentStream = null; }
-    try { if (srcNode && srcNode.stop) srcNode.stop(); } catch (e) {}
-    try { if (srcNode && srcNode.disconnect) srcNode.disconnect(); } catch (e) {}
-    try { if (analyser) analyser.disconnect(); } catch (e) {}
-    try { if (levelAnalyser) levelAnalyser.disconnect(); } catch (e) {}
-    try { if (inputGainNode) inputGainNode.disconnect(); } catch (e) {}
+    if (currentStream){ try{ currentStream.getTracks().forEach(t => t.stop()); }catch(_){ } currentStream = null; }
+    try{ if (srcNode && srcNode.stop) srcNode.stop(); }catch(_){ }
+    try{ if (srcNode && srcNode.disconnect) srcNode.disconnect(); }catch(_){ }
+    try{ if (analyser) analyser.disconnect(); }catch(_){ }
+    try{ if (levelAnalyser) levelAnalyser.disconnect(); }catch(_){ }
+    try{ if (inputGainNode) inputGainNode.disconnect(); }catch(_){ }
     srcNode = null; inputGainNode = null;
   }
 
   function stopAll(){ stopSource(); setStatus('Gestoppt'); }
 
   // UI events
-  startBtn.addEventListener('click', function(){ startWithFallbackOrdered(sourceSelect.value); });
+  startBtn.addEventListener('click', () => startByMode(sourceSelect.value));
   stopBtn.addEventListener('click', stopAll);
-  toggleSettingsBtn.addEventListener('click', function(){ const hidden = controlsPanel.classList.contains('hidden'); hideSettings(!hidden); });
-  refreshDevsBtn.addEventListener('click', refreshDevices);
+  toggleSettingsBtn.addEventListener('click', () => { const hidden = controlsPanel.classList.contains('hidden'); hideSettings(!hidden); });
   clearBtn.addEventListener('click', clearSpectrogram);
-  snapBtn.addEventListener('click', function(){
+  snapBtn.addEventListener('click', () => {
     const tmp = document.createElement('canvas'); tmp.width = spec.width; tmp.height = spec.height;
     const tctx = tmp.getContext('2d'); tctx.drawImage(spec, 0, 0); tctx.drawImage(axis, 0, 0);
     const url = tmp.toDataURL('image/png'); const a = document.createElement('a'); a.href = url; a.download = 'spektrogramm.png'; a.click();
   });
 
-  [fftSelect, smoothingEl, minDbEl, maxDbEl].forEach(function(el){ el.addEventListener('change', function(){ if (!audioCtx) return; makeAnalyser(); }); });
-  [cmapSelect, scaleSelect].forEach(function(el){ el.addEventListener('change', function(){ buildYToBin(); drawAxis(); }); });
-  sourceSelect.addEventListener('change', function(){
+  [fftSelect, smoothingEl, minDbEl, maxDbEl].forEach(el => el.addEventListener('change', () => { if (!audioCtx) return; makeAnalyser(); }));
+  [cmapSelect, scaleSelect].forEach(el => el.addEventListener('change', () => { buildYToBin(); drawAxis(); }));
+  sourceSelect.addEventListener('change', () => {
     const usingFile = sourceSelect.value === 'file';
     fileInput.disabled = !usingFile;
     deviceSelect.disabled = sourceSelect.value !== 'mic';
     if (sourceSelect.value === 'mic') monitorEl.checked = false;
   });
-  fileInput.addEventListener('change', function(){ if (sourceSelect.value === 'file' && fileInput.files && fileInput.files[0]){ setStatus('Datei ausgewählt: ' + fileInput.files[0].name); } });
+  fileInput.addEventListener('change', () => { if (sourceSelect.value === 'file' && fileInput.files && fileInput.files[0]){ setStatus(`Datei ausgewählt: ${fileInput.files[0].name}`); } });
   gainFader.addEventListener('input', applyGain);
-
-  async function refreshDevices(){
-    if (!micSupported()) return;
-    try {
-      try { await navigator.mediaDevices.getUserMedia({audio:true}); } catch (e) {}
-      const inputs = await listInputDevices(); populateDeviceList(inputs);
-    } catch (e) { console.warn('enumerateDevices failed', e); }
-  }
 
   // ---- Selbsttest (Testfälle) ----
   function log(msg, cls){ const span = document.createElement('div'); span.textContent = msg; if (cls) span.className = cls; testLogEl.appendChild(span); testLogEl.scrollTop = testLogEl.scrollHeight; }
@@ -602,25 +564,25 @@
     try {
       ensureAudioCtx(); makeAnalyser();
       const ok1 = !!(audioCtx && analyser && dataArray && dataArray.length === analyser.frequencyBinCount);
-      log('Test 1 – Analyser initialisiert: ' + (ok1?'OK':'FEHLER'), ok1?'ok':'fail');
+      log(`Test 1 – Analyser initialisiert: ${ok1?'OK':'FEHLER'}`, ok1?'ok':'fail');
 
+      // Test 2 – y→Bin monoton in irgendeine Richtung (Display darf top→bottom steigen oder fallen)
       buildYToBin(); let nonDecr=true, nonIncr=true; for (let y=1;y<yToBin.length;y++){ if (yToBin[y] < yToBin[y-1]) nonDecr=false; if (yToBin[y] > yToBin[y-1]) nonIncr=false; }
-      const ok2 = nonDecr || nonIncr; log('Test 2 – y→Bin monoton: ' + (ok2?'OK':'FEHLER'), ok2?'ok':'fail');
+      const ok2 = nonDecr || nonIncr; log(`Test 2 – y→Bin monoton: ${ok2?'OK':'FEHLER'}`, ok2?'ok':'fail');
 
-      await startDemo(); const ok3 = playing === true; log('Test 3 – Demo‑Signal gestartet: ' + (ok3?'OK':'FEHLER'), ok3?'ok':'fail');
-      await new Promise(function(r){ setTimeout(r, 60); }); const ok4 = rafId !== null; log('Test 4 – Rendering aktiv: ' + (ok4?'OK':'FEHLER'), ok4?'ok':'fail');
-      stopAll(); await new Promise(function(r){ setTimeout(r, 60); }); const ok5 = playing === false; log('Test 5 – Stop funktioniert: ' + (ok5?'OK':'FEHLER'), ok5?'ok':'fail');
+      await startDemo(); const ok3 = playing === true; log(`Test 3 – Demo‑Signal gestartet: ${ok3?'OK':'FEHLER'}`, ok3?'ok':'fail');
+      await new Promise(r => setTimeout(r, 60)); const ok4 = rafId !== null; log(`Test 4 – Rendering aktiv: ${ok4?'OK':'FEHLER'}`, ok4?'ok':'fail');
+      stopAll(); await new Promise(r => setTimeout(r, 60)); const ok5 = playing === false; log(`Test 5 – Stop funktioniert: ${ok5?'OK':'FEHLER'}`, ok5?'ok':'fail');
       log('Selbsttest abgeschlossen.');
-    } catch (e){ console.error(e); log('Selbsttest abgebrochen: ' + e.message, 'fail'); }
+    } catch(e){ console.error(e); log('Selbsttest abgebrochen: '+e.message, 'fail'); }
   }
   selfTestBtn.addEventListener('click', runSelfTests);
 
   function populateDeviceList(inputs){
     deviceSelect.innerHTML = '';
-    function add(id, label){ const opt=document.createElement('option'); opt.value=id; opt.textContent=label; deviceSelect.appendChild(opt); }
-    add('default','Systemstandard');
-    if (inputs && inputs.length){ for (let i=0;i<inputs.length;i++){ const d=inputs[i]; add(d.deviceId||'', d.label||('Mikrofon ' + (i+1))); } deviceSelect.disabled = false; }
-    else { deviceSelect.disabled = false; }
+    if (!inputs || inputs.length === 0){ const opt = document.createElement('option'); opt.textContent = '— keine Geräte —'; opt.value=''; deviceSelect.appendChild(opt); deviceSelect.disabled = true; return; }
+    inputs.forEach((d,i)=>{ const opt=document.createElement('option'); opt.value=d.deviceId||''; opt.textContent=d.label||`Mikrofon ${i+1}`; deviceSelect.appendChild(opt); });
+    deviceSelect.disabled = false;
   }
 })();
 </script>
