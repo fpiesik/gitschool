@@ -132,10 +132,10 @@ hue-6-2: #c18401
 .hljs-link {
   text-decoration: underline;
 }</style>
-						<title>Challenge: W&uuml;rfel</title>
+						<title>Challenge:_W&uuml;rfel</title>
 					</head>
 					<body>
-						<div class="exported-note"><div class="exported-note-title">Challenge: W&uuml;rfel</div>
+						<div class="exported-note"><div class="exported-note-title">Challenge:_W&uuml;rfel</div>
 
 <style>
 		/* https://necolas.github.io/normalize.css/ */
@@ -625,164 +625,24 @@ pre.mermaid[data-processed=true] { white-space: unset; }
 }
 </style><div id="rendered-md"><h2 id="ein-spieleabend-in-gefahr">Ein Spieleabend in Gefahr:</h2>
 <p>Du bist auf einem Spieleabend und ihr wollt eine Partie Risiko spielen. Leider fehlen im Spiel die W&uuml;rrfel und ihr k&ouml;nnt im ganzen Haus keinen W&uuml;rfel auftreiben. Leider gibt es gerade auch kein Internet, weil ein Sturm die Leitung besch&auml;digt hat, so dass ihr auch keine W&uuml;rfel-App herunterladen k&ouml;nnt. Zum Gl&uuml;ck hast du aber dein GameBoy und eine kleine Bluetooth-Tastatur dabei, so dass du kurzerhand entscheidest, einen W&uuml;rfel in Pico-8 zu programmieren.</p>
-<h3 id="mindestanforderungen-an-den-w&uuml;rfel">Mindestanforderungen an den W&uuml;rfel:</h3>
-<ul>
-<li>Durch Knopfdruck wird das W&uuml;rfeln ausgel&ouml;st.</li>
-<li>Der W&uuml;rfel gibt Zahlen zwischen 1 und 6 aus.</li>
-</ul>
-<h3 id="zusatz-features">Zusatz-Features:</h3>
-<ul>
-<li>Man kann mit drei roten und zwei blauen W&uuml;rfeln gleichzeitig w&uuml;rfeln.</li>
-<li>Man einstellen, was f&uuml;r ein W&uuml;rfel (W6, W20) man benutzen m&ouml;chte.</li>
-<li>Das Ergebnis wird durch das Bild eines W&uuml;rfeln dargestellt.</li>
-<li>Das W&uuml;rfeln wird als Animation dargestellt.</li>
-</ul>
-<h3 id="zutaten">Zutaten:</h3>
+<h3 id="m&ouml;gliche-zutaten">M&ouml;gliche Zutaten:</h3>
 <p>Viele Wege f&uuml;hren nach Rom, aber hier sind m&ouml;gliche Zutaten</p>
-<div class="joplin-table-wrapper">
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Zahl: <strong><code class="inline-code">x = 3</code></strong></td>
-<td>Speichert einen einzelnen Zahlenwert</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="joplin-table-wrapper">
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong><code class="inline-code">_draw()</code></strong></td>
-<td>Wird 30 mal Pro Sekunde wiederholt. Alles was in dieser Funktion steht wird also unendlich mal wiederholt (loop). Hier werden alle Befehle ausgef&uuml;hrt, die den Bildschirninhalt ver&auml;ndern. Sie wird nach der <code class="inline-code">_update()</code>-Funktion ausgef&uuml;hrt.</td>
-<td><code class="inline-code">function _draw()</code>  <br class="jop-noMdConv"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="inline-code">&nbsp;cls(12)</code>  <br class="jop-noMdConv"/><code class="inline-code">circ(x,y,r)</code>  <br class="jop-noMdConv"/><code class="inline-code">end</code></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="joplin-table-wrapper">
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong><code class="inline-code">btnp([b, [p]])</code></strong>  <br class="jop-noMdConv"/><br class="jop-noMdConv"/>Ist ein Frame lang wahr, wenn der Knopf b vom Spieler p gedr&uuml;ckt wurde.</td>
-<td><strong>b</strong>: Knopf-Nummer  <br class="jop-noMdConv"/><strong>p</strong>: Player-Nummer</td>
-<td><code class="inline-code">out = 0</code>  <br class="jop-noMdConv"/><code class="inline-code">function _draw()</code>  <br class="jop-noMdConv"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="inline-code">&nbsp;&nbsp;if btnp(0) then</code>  <br class="jop-noMdConv"/>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<code class="inline-code">&nbsp;&nbsp; &nbsp;out= out+1</code>  <br class="jop-noMdConv"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="inline-code">&nbsp;&nbsp;end</code>  <br class="jop-noMdConv"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="inline-code">&nbsp;&nbsp;cls()</code>  <br class="jop-noMdConv"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code class="inline-code">&nbsp;&nbsp;print(out)</code>  <br class="jop-noMdConv"/><code class="inline-code">end</code></td>
-<td>Jeder Knopfdruck erh&ouml;ht &quot;out&quot; um 1</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="joplin-table-wrapper">
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong><code class="inline-code">rnd(x)</code></strong>  <br class="jop-noMdConv"/><br class="jop-noMdConv"/>Erzeugt eine Zufallszahl</td>
-<td><code class="inline-code">x</code>: Die H&ouml;he der Zufallszahl. 10 gibt z. B. eine zuf&auml;llige Zahl zwischen 0 und 9</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="joplin-table-wrapper">
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong><code class="inline-code">flr(x)</code></strong>  <br class="jop-noMdConv"/><br class="jop-noMdConv"/>Rundet, indem sie alle Nachkommastellen abschneidet</td>
-<td><code class="inline-code">x</code>: Die Zahl die gerundet wird</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="joplin-table-wrapper">
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong><code class="inline-code">print(str, x, y [c])</code></strong>  <br class="jop-noMdConv"/><strong><code class="inline-code">print(str, [c])</code></strong></td>
-<td><code class="inline-code">str</code>: Anzuzeigender Text  <br class="jop-noMdConv"/><code class="inline-code">x</code>: Position auf der X-Achse  <br class="jop-noMdConv"/><code class="inline-code">y</code>: Position auf der Y-Achse  <br class="jop-noMdConv"/><code class="inline-code">c</code>: Farbe</td>
-</tr>
-</tbody>
-</table>
-</div>
+<table style="width: 100.014%; height: 189.783px;" class="jop-noMdConv"><thead class="jop-noMdConv"><tr style="height: 24.7716px;" class="jop-noMdConv"><th style="width: 17.1595%; height: 24.7716px;" class="jop-noMdConv"></th><th style="width: 39.0737%; height: 24.7716px;" class="jop-noMdConv">Erkl&auml;rung</th><th style="width: 43.7469%; height: 24.7716px;" class="jop-noMdConv">Beispiel</th></tr></thead><tbody class="jop-noMdConv"><tr class="jop-noMdConv"><td style="width: 17.1595%;" class="jop-noMdConv"><strong class="jop-noMdConv"><code class="inline-code jop-noMdConv" spellcheck="false">x = 3</code></strong></td><td style="width: 39.0737%;" class="jop-noMdConv">Speichert eine Zahl in der Variable x</td><td style="width: 43.7469%;" class="jop-noMdConv"></td></tr><tr style="height: 117.007px;" class="jop-noMdConv"><td style="width: 17.1595%; height: 117.007px;" class="jop-noMdConv"><strong class="jop-noMdConv"><code class="inline-code jop-noMdConv" spellcheck="false">_draw()</code></strong></td><td style="width: 39.0737%; height: 117.007px;" class="jop-noMdConv">Wird 30 mal Pro Sekunde wiederholt. Alles was in dieser Funktion steht wird also unendlich mal wiederholt (loop). Hier werden alle Befehle ausgef&uuml;hrt, die den Bildschirninhalt ver&auml;ndern.</td><td style="width: 43.7469%; height: 117.007px;" class="jop-noMdConv"><div class="joplin-editable jop-noMdConv"><pre class="joplin-source jop-noMdConv" data-joplin-language="lua" data-joplin-source-open="```lua
+" data-joplin-source-close="
+```">function _draw()
+ cls()
+end</pre><pre class="hljs jop-noMdConv"><code class="jop-noMdConv"><span class="hljs-function jop-noMdConv"><span class="hljs-keyword jop-noMdConv">function</span> <span class="hljs-title jop-noMdConv">_draw</span><span class="hljs-params jop-noMdConv">()</span></span>
+ cls()
+<span class="hljs-keyword jop-noMdConv">end</span></code></pre></div><div class="joplin-editable jop-noMdConv"><pre class="joplin-source jop-noMdConv" data-joplin-language="lua" data-joplin-source-open="```lua
+" data-joplin-source-close="
+```"></pre><pre class="hljs jop-noMdConv"><code class="jop-noMdConv"></code></pre></div></td></tr><tr style="height: 48.0048px;" class="jop-noMdConv"><td style="width: 17.1595%; height: 48.0048px;" class="jop-noMdConv"><strong class="jop-noMdConv"><code spellcheck="false" class="jop-noMdConv">btnp([b])</code><br class="jop-noMdConv"/></strong></td><td style="width: 39.0737%; height: 48.0048px;" class="jop-noMdConv">Ist ein Frame lang wahr, wenn der Knopf b vom Spieler p gedr&uuml;ckt wurde.</td><td style="width: 43.7469%; height: 48.0048px;" class="jop-noMdConv"><div class="joplin-editable jop-noMdConv"><pre class="joplin-source jop-noMdConv" data-joplin-language="lua" data-joplin-source-open="```lua
+" data-joplin-source-close="
+```">if btnp(0) then
+ x = 0
+end</pre><pre class="hljs jop-noMdConv"><code class="jop-noMdConv"><span class="hljs-keyword jop-noMdConv">if</span> btnp(<span class="hljs-number jop-noMdConv">0</span>) <span class="hljs-keyword jop-noMdConv">then</span>
+ x = <span class="hljs-number jop-noMdConv">0</span>
+<span class="hljs-keyword jop-noMdConv">end</span></code></pre></div></td></tr><tr class="jop-noMdConv"><td style="width: 17.1595%;" class="jop-noMdConv"><code spellcheck="false" class="jop-noMdConv">rnd(x)</code></td><td style="width: 39.0737%;" class="jop-noMdConv"><p class="jop-noMdConv">Erzeugt eine Zufallszahl.</p><p class="jop-noMdConv"><code class="inline-code jop-noMdConv" spellcheck="false">x</code>: Die H&ouml;he der Zufallszahl. 10 gibt z. B. eine zuf&auml;llige Zahl zwischen 0 und 9</p></td><td style="width: 43.7469%;" class="jop-noMdConv"></td></tr><tr class="jop-noMdConv"><td style="width: 17.1595%;" class="jop-noMdConv"><code spellcheck="false" class="jop-noMdConv">spr(n,x,y)</code></td><td style="width: 39.0737%;" class="jop-noMdConv"><p class="jop-noMdConv">Zeichnet das Sprite [n] auf die Position [x, y]</p></td><td style="width: 43.7469%;" class="jop-noMdConv"></td></tr><tr class="jop-noMdConv"><td style="width: 17.1595%;" class="jop-noMdConv"><code spellcheck="false" class="jop-noMdConv">flr(x)</code></td><td style="width: 39.0737%;" class="jop-noMdConv"><p class="jop-noMdConv">Rundet, indem alle Nachkommastellen abgeschnitten werden</p><p class="jop-noMdConv"><code class="inline-code jop-noMdConv" spellcheck="false">x</code>: Die Zahl die gerundet wird</p></td><td style="width: 43.7469%;" class="jop-noMdConv"></td></tr><tr class="jop-noMdConv"><td style="width: 17.1595%;" class="jop-noMdConv"><strong class="jop-noMdConv"><code class="inline-code jop-noMdConv" spellcheck="false">print(str, x, y)</code></strong></td><td style="width: 39.0737%;" class="jop-noMdConv"><p class="jop-noMdConv"><code class="inline-code jop-noMdConv" spellcheck="false">str</code>: Anzuzeigender Text<br class="jop-noMdConv"/><code class="inline-code jop-noMdConv" spellcheck="false">x</code>: Position auf der X-Achse<br class="jop-noMdConv"/><code class="inline-code jop-noMdConv" spellcheck="false">y</code>: Position auf der Y-Achse</p></td><td style="width: 43.7469%;" class="jop-noMdConv"></td></tr></tbody></table>
 <p>&nbsp;</p>
-<h2 id="zwischergebnis-1">Zwischergebnis 1</h2>
-<p><code class="inline-code">max_au=6 --zahl der augen</code><br/>
-<code class="inline-code">erg=0 --ergebnis</code></p>
-<p><code class="inline-code">function _draw()</code><br/>
-&nbsp;&nbsp;<code class="inline-code">&nbsp;cls()</code><br/>
-&nbsp;&nbsp;<code class="inline-code">&nbsp;if btnp(4) then</code><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<code class="inline-code">&nbsp;&nbsp;erg=rnd(max_au)</code><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<code class="inline-code">&nbsp;&nbsp;erg=flr(erg) + 1</code><br/>
-&nbsp;&nbsp;<code class="inline-code">&nbsp;end</code><br/>
-&nbsp;&nbsp;<code class="inline-code">&nbsp;print(erg,60,60)</code><br/>
-<code class="inline-code">end</code></p>
-<h2 id="zwischenergenis-2">Zwischenergenis 2</h2>
-<p><code class="inline-code">Zwischergebnis</code><br/>
-<code class="inline-code">max_au=6 --zahl der augen</code><br/>
-<code class="inline-code">erg_1=0 --ergebnis</code><br/>
-<code class="inline-code">erg_2=0</code><br/>
-<code class="inline-code">erg_3=0</code><br/>
-<code class="inline-code">erg_4=0</code><br/>
-<code class="inline-code">erg_5=0</code><br/>
-<code class="inline-code">function _draw()</code><br/>
-<code class="inline-code">cls()</code><br/>
-<code class="inline-code">if btnp(4) then</code><br/>
-&nbsp;<code class="inline-code">&nbsp;erg_1=rnd(max_au)</code><br/>
-&nbsp;<code class="inline-code">&nbsp;erg_1=flr(erg_1) + 1</code><br/>
-&nbsp;<code class="inline-code">&nbsp;erg_2=rnd(max_au)</code><br/>
-&nbsp;<code class="inline-code">&nbsp;erg_2=flr(erg_2) + 1</code><br/>
-&nbsp;<code class="inline-code">&nbsp;erg_3=rnd(max_au)</code><br/>
-&nbsp;<code class="inline-code">&nbsp;erg_3=flr(erg_3) + 1</code><br/>
-<code class="inline-code">end</code><br/>
-<code class="inline-code">if btnp(5) then</code><br/>
-&nbsp;<code class="inline-code">&nbsp;erg_4=rnd(max_au)</code><br/>
-&nbsp;<code class="inline-code">&nbsp;erg_4=flr(erg_4) + 1</code><br/>
-&nbsp;<code class="inline-code">&nbsp;erg_5=rnd(max_au)</code><br/>
-&nbsp;<code class="inline-code">&nbsp;erg_5=flr(erg_5) + 1</code><br/>
-<code class="inline-code">end</code><br/>
-<code class="inline-code">print(erg_1,50,60,8)</code><br/>
-<code class="inline-code">print(erg_2,60,60,8)</code><br/>
-<code class="inline-code">print(erg_3,70,60,8)</code><br/>
-<code class="inline-code">print(erg_4,55,70,12)</code><br/>
-<code class="inline-code">print(erg_5,65,70,12)</code><br/>
-<code class="inline-code">end</code></p>
 </div></div>
 					</body>
 				</html>
