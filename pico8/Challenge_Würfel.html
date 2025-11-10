@@ -698,7 +698,27 @@ end
 print(z)</pre><pre class="hljs jop-noMdConv"><code class="jop-noMdConv">z = flr(<span class="hljs-number jop-noMdConv">7.3452</span>)
 <span class="hljs-built_in jop-noMdConv">print</span>(z)</code></pre></div><p class="jop-noMdConv">Ausgabe: 7</p></td></tr><tr class="jop-noMdConv"><td style="width: 17.1595%;" class="jop-noMdConv"><span class="jop-noMdConv"><code class="inline-code jop-noMdConv" spellcheck="false">print(str, x, y)</code></span></td><td style="width: 39.0737%;" class="jop-noMdConv"><p class="jop-noMdConv"><code class="inline-code jop-noMdConv" spellcheck="false">str</code>: Anzuzeigender Text<br class="jop-noMdConv"/><code class="inline-code jop-noMdConv" spellcheck="false">x</code>: Position auf der X-Achse<br class="jop-noMdConv"/><code class="inline-code jop-noMdConv" spellcheck="false">y</code>: Position auf der Y-Achse</p></td><td style="width: 43.7469%;" class="jop-noMdConv"><div class="joplin-editable jop-noMdConv"><pre class="joplin-source jop-noMdConv" data-joplin-language="lua" data-joplin-source-open="```lua
 " data-joplin-source-close="
-```">print(&quot;hallo welt&quot;,60,60)</pre><pre class="hljs jop-noMdConv"><code class="jop-noMdConv"><span class="hljs-built_in jop-noMdConv">print</span>(<span class="hljs-string jop-noMdConv">&quot;hallo welt&quot;</span>,<span class="hljs-number jop-noMdConv">60</span>,<span class="hljs-number jop-noMdConv">60</span>)</code></pre></div><p class="jop-noMdConv">Schreibt &quot;hallo welt&quot; in die Mitte des Bildschirms.</p></td></tr></tbody></table></div>
+```">print(&quot;hallo welt&quot;,60,60)</pre><pre class="hljs jop-noMdConv"><code class="jop-noMdConv"><span class="hljs-built_in jop-noMdConv">print</span>(<span class="hljs-string jop-noMdConv">&quot;hallo welt&quot;</span>,<span class="hljs-number jop-noMdConv">60</span>,<span class="hljs-number jop-noMdConv">60</span>)</code></pre></div><p class="jop-noMdConv">Schreibt &quot;hallo welt&quot; in die Mitte des Bildschirms.</p></td></tr><tr class="jop-noMdConv"><td style="width: 17.1595%;" class="jop-noMdConv"><span class="jop-noMdConv">&lt; &gt; == !=</span></td><td style="width: 39.0737%;" class="jop-noMdConv"><p class="jop-noMdConv">Komperatoren sind zum Vergleichen von Zahlen da.</p><p class="jop-noMdConv">gr&ouml;&szlig;er als: &gt;<br class="jop-noMdConv"/>kleiner als: &lt;<br class="jop-noMdConv"/>gleich: ==<br class="jop-noMdConv"/>ungleich: !=</p></td><td style="width: 43.7469%;" class="jop-noMdConv"><div class="joplin-editable jop-noMdConv"><pre class="joplin-source jop-noMdConv" data-joplin-language="lua" data-joplin-source-open="```lua
+" data-joplin-source-close="
+```">farbe = 0
+function _draw()
+ cls(farbe)
+ if btnp(0) then
+  farbe = rnd(16)
+ end
+ if farbe &gt; 7 then
+  print(&quot;farbe ist groesser als 7!&quot;)
+ end
+end</pre><pre class="hljs jop-noMdConv"><code class="jop-noMdConv">farbe = <span class="hljs-number jop-noMdConv">0</span>
+<span class="hljs-function jop-noMdConv"><span class="hljs-keyword jop-noMdConv">function</span> <span class="hljs-title jop-noMdConv">_draw</span><span class="hljs-params jop-noMdConv">()</span></span>
+ cls(farbe)
+ <span class="hljs-keyword jop-noMdConv">if</span> btnp(<span class="hljs-number jop-noMdConv">0</span>) <span class="hljs-keyword jop-noMdConv">then</span>
+  farbe = rnd(<span class="hljs-number jop-noMdConv">16</span>)
+ <span class="hljs-keyword jop-noMdConv">end</span>
+ <span class="hljs-keyword jop-noMdConv">if</span> farbe &gt; <span class="hljs-number jop-noMdConv">7</span> <span class="hljs-keyword jop-noMdConv">then</span>
+  <span class="hljs-built_in jop-noMdConv">print</span>(<span class="hljs-string jop-noMdConv">&quot;farbe ist groesser als 7!&quot;</span>)
+ <span class="hljs-keyword jop-noMdConv">end</span>
+<span class="hljs-keyword jop-noMdConv">end</span></code></pre></div></td></tr></tbody></table></div>
 <p>&nbsp;</p>
 </div></div>
 					</body>
