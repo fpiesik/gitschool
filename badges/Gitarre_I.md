@@ -17,10 +17,7 @@
 
 ## Kompetenzen
 
-- Ich kann hören, welcher von zwei Tönen höher klingt.
-- Ich kann hören auf welcher Zählzeit geklatscht wurde.
-- Ich kann einen zweitaktigen Rhythmus nachklatschen.
-- Ich kann den Klang einer aktustischen von einer elektrischen Gitarre unterscheiden.
+- Ich kann den Klang einer akustischen von einer elektrischen Gitarre unterscheiden.
 - Ich kann den Klang einer cleanen und verzerrten Gitarre vergleichen.
 - Ich kenne die Namen der Saiten.
 - Ich kann die Teile einer Gitarre benennen.

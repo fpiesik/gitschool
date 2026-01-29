@@ -14,8 +14,8 @@
 ## Kompetenzen (ich kann)
 
 - Ich kenne drei berühmte Schlagzeuger.
-- Ich kann die Teile eines Schlagzeuges richtig bennen und am Klang erkennen.
-- Ich kann den Standard-Rock-Beat auf dem Ipad-Schlagzeug spielen.
+- Ich kann den Klang eines akustischen und eines elektrischen Schlagzeugs unterscheiden.
+- Ich kann die Teile eines Schlagzeuges richtig bennen.
+- Ich kann die Teile eines Schlagzeuges am Klang erkennen.
 - Ich kann erklären, wie man die Tabellen-Notation liest.
-
-&nbsp;
+- Ich kann den Standard-Rock-Beat auf dem Ipad-Schlagzeug spielen.
