@@ -13,7 +13,6 @@
 
 ## Kompetenzen (ich kann)
 
-- Ich kenne drei berühmte Schlagzeuger.
 - Ich kann den Klang eines akustischen und eines elektrischen Schlagzeugs unterscheiden.
 - Ich kann die Teile eines Schlagzeuges richtig bennen.
 - Ich kann die Teile eines Schlagzeuges am Klang erkennen.
