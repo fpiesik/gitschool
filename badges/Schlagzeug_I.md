@@ -16,5 +16,5 @@
 - Ich kann den Klang eines akustischen und eines elektrischen Schlagzeugs unterscheiden.
 - Ich kann die Teile eines Schlagzeuges richtig bennen.
 - Ich kann die Teile eines Schlagzeuges am Klang erkennen.
-- Ich kann erklären, wie man die Tabellen-Notation liest.
+- Ich kann die Tabellen-Notation für das Schlagzeugspielen anwenden.
 - Ich kann den Standard-Rock-Beat auf dem Ipad-Schlagzeug spielen.

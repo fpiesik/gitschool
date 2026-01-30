@@ -12,10 +12,9 @@
 
 ## Kompetenzen
 Kompetenzen:
-Ich kann den Klang eines E-Bass von einer elektrischen Gitarre unterscheiden.
+Ich kann den Klang eines E-Basses von einer elektrischen Gitarre unterscheiden.
 Ich kenne die Namen der Saiten.
-Ich kann die Teile eines E-Bass benennen. (Schaubild)
-Ich kann erklären, wie man die Tabulatur-Schrift liest
+Ich kann die Teile eines E-Basses benennen.
+Ich kann erklären, wie man die Tabulatur-Schrift liest.
 Ich kann ein Riff auf dem IPad-Bass spielen.
-
-&nbsp;
+Ich kann einen Bass an einen Bassverstärker anschließen und die Lautstärke regulieren.
