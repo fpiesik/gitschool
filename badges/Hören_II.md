@@ -1,9 +1,9 @@
-# Rhythmenhören I
+# Hören II
 
 ## Perks (ich bekomme, ich darf)
 
 - Der Badge verbessert meine Musiknote.
-- Der Badge ist Voraussetzung für den Schlagzeug-I-Badge.
+- Der Badge ist Voraussetzung für den Schlagzeug-II-Badge.
 
 ## Kompetenzen (ich kann)
 
@@ -15,4 +15,4 @@
 
 ## Pflichten (Ich muss)
 
-- \-
+
