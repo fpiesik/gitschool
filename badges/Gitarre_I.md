@@ -9,9 +9,7 @@
 ## Vorteile
 
 - Ich darf während der Freiarbeit alleine an der Gitarre üben.
-    
 - Ich darf während der Pausen
-    
 - Der Badge verbessert meine Musiknote.
     
 

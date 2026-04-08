@@ -2,7 +2,8 @@
 
 ## Voraussetzungen
 
-- Hören-I-Badge
+- Regeln-Badge
+- Hören_I-Badge
 - Tabellen-Notation-Badge
 
 ## Vorteile

@@ -2,6 +2,7 @@
 
 ## Voraussetzungen
 
+- Rgeln-Badge
 - Hören-I-Badge
 - Tabulatur-Badge
 

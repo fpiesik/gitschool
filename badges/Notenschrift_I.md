@@ -1,15 +1,16 @@
-Tabellennotation
-Voraussetzungen
+# Tabellennotation
 
-    Regeln-Badge
-    Graphische Notation-Badge
-    Tabellennotation-Badge
+## Voraussetzungen
 
-Vorteile
+- Regeln-Badge
+- Graphische Notation-Badge
+- Tabellennotation-Badge
+
+## Vorteile
   
-  Der Badge verbessert meine Musiknote.
+- Der Badge verbessert meine Musiknote.
 
-Kompetenzen
+## Kompetenzen
 - Ich kann einen Violinschlüssel in ein Notensystem einzeichnen.
 - Ich kann die Notennamen der Stammtonreihe in der richtigen Reihenfolge aufsagen.
 - Ich kann die Stammtonreihe in ein Notensystem einzeichnen.
