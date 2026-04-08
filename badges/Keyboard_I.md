@@ -3,9 +3,7 @@
 ## Voraussetzungen
 
 - Regeln-Badge
-- Klängehören-I-Badge
-- Rhythmenhören-I-Badge
-- Tabellennotation-Badge
+- Hören-I-Badge
 
 ## Vorteile
 

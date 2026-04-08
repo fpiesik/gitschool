@@ -2,7 +2,7 @@
 
 ## Voraussetzungen
 
-- Rhythmen-Hören-Badge
+- Hören-I-Badge
 - Tabellen-Notation-Badge
 
 ## Vorteile

@@ -3,8 +3,8 @@
 ## Voraussetzungen
 
 - Regeln-Badge
-- Tönehören-I-Badge
-- Klängehören-I-Badge
+- Hören-I-Badge
+- Tabulatur-Badge
 
 ## Vorteile
 
